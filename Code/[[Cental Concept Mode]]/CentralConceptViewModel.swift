@@ -35,20 +35,26 @@ class CentralConceptViewModel: ObservableObject {
         self.mainContainerViewModel = mainContainerViewModel
     }
     
-    func register(layoutWidth: CGFloat, layoutHeight: CGFloat) {
+    func register(layoutWidth: CGFloat, layoutHeight: CGFloat, gridWidth: Int) {
         
         let diff1 = abs(layoutWidth - layout.layoutWidth)
         let diff2 = abs(layoutHeight - layout.layoutHeight)
+        let diff3 = gridWidth - layout.gridWidth
         
-        guard (diff1 > 0.5) || (diff2 > 0.5) else {
-            //print("CentralConceptViewModel (\(layoutWidth) x \(layoutHeight)) SAME (\(layout.layoutWidth) x \(layout.layoutHeight))")
+        print("CentralConceptViewModel (\(layoutWidth) x \(layoutHeight)) SAME (\(layout.layoutWidth) x \(layout.layoutHeight))")
+        print("CentralConceptViewModel (\(gridWidth)) SAME (\(layout.gridWidth))")
+        
+        guard (diff1 > 0.5) || (diff2 > 0.5) || (diff3 != 0) else {
+            print("CentralConceptViewModel Laying Out")
             return
         }
+        print("CentralConceptViewModel *NOT* Laying Out")
         
         layout.register(layoutWidth: layoutWidth,
-                        layoutHeight: layoutHeight)
+                        layoutHeight: layoutHeight,
+                        gridWidth: gridWidth)
         
-        let buildResponse = layout.build()
+        let buildResponse = layout.build(gridWidth: gridWidth)
         
         usedWords = buildResponse.usedWords
         usedIdeas = buildResponse.usedIdeas
@@ -59,10 +65,11 @@ class CentralConceptViewModel: ObservableObject {
         }
     }
     
-    func build() {
-        print("Central Concept => build")
+    func build(gridWidth: Int) {
         
-        let buildResponse = layout.build()
+        print("CentralConceptViewModel Build (gridWidth: \(gridWidth))")
+        
+        let buildResponse = layout.build(gridWidth: gridWidth)
         
         usedWords = buildResponse.usedWords
         usedIdeas = buildResponse.usedIdeas

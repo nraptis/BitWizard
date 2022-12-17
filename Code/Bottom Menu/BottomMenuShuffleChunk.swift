@@ -28,21 +28,24 @@ struct BottomMenuShuffleChunk: View {
             }
             
             ZStack {
+                ZStack {
+                    
+                }
+                .frame(width: width - (paddingLeft + paddingRight), height: height - (paddingTop + paddingBottom))
+                .background(RoundedRectangle(cornerRadius: 12.0).stroke(style: StrokeStyle(lineWidth: 2)).foregroundColor(.white))
                 
+                
+                if ApplicationController.isIpad() {
+                    Image(systemName: "shuffle")
+                        .font(.system(size: 42))
+                        .foregroundColor(.white)
+                } else {
+                    Image(systemName: "shuffle")
+                        .font(.system(size: 34))
+                        .foregroundColor(.white)
+                }
             }
-            .frame(width: width - (paddingLeft + paddingRight), height: height - (paddingTop + paddingBottom))
-            .background(RoundedRectangle(cornerRadius: 12.0).stroke(style: StrokeStyle(lineWidth: 2)).foregroundColor(.white))
-
-            
-            if ApplicationController.isIpad() {
-                Image(systemName: "shuffle")
-                    .font(.system(size: 42))
-                    .foregroundColor(.white)
-            } else {
-                Image(systemName: "shuffle")
-                    .font(.system(size: 34))
-                    .foregroundColor(.white)
-            }
+            .allowsHitTesting(false)
         }
         .frame(width: width, height: height)
     }

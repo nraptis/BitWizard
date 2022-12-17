@@ -16,7 +16,11 @@ struct CentralConceptView: View {
         GeometryReader { _ in
             CentralConceptViewContent(centralConceptViewModel: centralConceptViewModel,
                                              mainContainerViewModel: mainContainerViewModel,
-                                             concepts: centralConceptViewModel.layout.concepts)
+                                      
+                                      concepts: centralConceptViewModel.layout.concepts,
+                                      
+                                      rects: centralConceptViewModel.layout.rects
+                                        )
         }
         .frame(width: width, height: height)
         .background(Color.black)

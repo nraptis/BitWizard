@@ -29,21 +29,24 @@ struct BottomMenuFlipButtonChunk: View {
                 }
                 
                 ZStack {
+                    ZStack {
+                        
+                    }
+                    .frame(width: height - (paddingLeft + paddingRight), height: height - (paddingTop + paddingBottom))
+                    .background(RoundedRectangle(cornerRadius: 12.0).stroke(style: StrokeStyle(lineWidth: 2)).foregroundColor(Color("limestone")))
                     
+                    
+                    if ApplicationController.isIpad() {
+                        Image(systemName: "arrow.up.arrow.down")
+                            .font(.system(size: 38))
+                            .foregroundColor(.white)
+                    } else {
+                        Image(systemName: "arrow.up.arrow.down")
+                            .font(.system(size: 30))
+                            .foregroundColor(.white)
+                    }
                 }
-                .frame(width: height - (paddingLeft + paddingRight), height: height - (paddingTop + paddingBottom))
-                .background(RoundedRectangle(cornerRadius: 12.0).stroke(style: StrokeStyle(lineWidth: 2)).foregroundColor(Color("limestone")))
-
-                
-                if ApplicationController.isIpad() {
-                    Image(systemName: "arrow.up.arrow.down")
-                        .font(.system(size: 38))
-                        .foregroundColor(.white)
-                } else {
-                    Image(systemName: "arrow.up.arrow.down")
-                        .font(.system(size: 30))
-                        .foregroundColor(.white)
-                }
+                .allowsHitTesting(false)
             }
             .frame(width: height, height: height)
             Spacer()

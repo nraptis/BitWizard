@@ -27,10 +27,8 @@ class ImageBucketIgnoreBag {
     
     func add(node: ImageCollectionNode) {
         if let existing = dict[node] {
-            print("resetting ignore node: \(node)")
             existing.reset()
         } else {
-            print("adding fresh ignore node: \(node)")
             let ignoreNode = ImageBucketIgnoreNode()
             dict[node] = ignoreNode
             bag.insert(node)
@@ -39,7 +37,6 @@ class ImageBucketIgnoreBag {
     
     func remove(node: ImageCollectionNode) {
         if bag.contains(node) {
-            print("removing ignore node: \(node)")
             bag.remove(node)
             dict.removeValue(forKey: node)
         }
@@ -59,7 +56,7 @@ class ImageBucketIgnoreBag {
             }
         }
         for node in _killList {
-            print("ignore purging \(node) to max age...")
+            //print("ignore purging \(node) to max age...")
             bag.remove(node)
             dict.removeValue(forKey: node)
         }

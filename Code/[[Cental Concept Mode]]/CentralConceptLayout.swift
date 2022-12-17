@@ -5,7 +5,7 @@
 //  Created by Nicky Taylor on 12/3/22.
 //
 
-import Foundation
+import UIKit
 
 class CentralConceptLayout: ConceptLayout {
     
@@ -18,16 +18,68 @@ class CentralConceptLayout: ConceptLayout {
         print("CentralConceptLayout.deinit()")
     }
     
-    func build() -> ConceptLayoutBuildResponse {
+    func build(gridWidth: Int) -> ConceptLayoutBuildResponse {
         
         var result = ConceptLayoutBuildResponse()
         
         concepts.removeAll(keepingCapacity: true)
+        rects.removeAll(keepingCapacity: true)
         
+        beginFreshBuild()
+        
+        //addCenterPiece(gridWidth: gridWidth)
         
         
         var tileWidth: CGFloat = layoutWidth * 0.5
         if tileWidth > 100 { tileWidth = 100 }
+        
+        
+        var tw: CGFloat = layoutWidth * 0.333333
+        for __x in 0..<3 {
+            
+            var y: CGFloat = 0
+            var __keepGoing = true
+            while __keepGoing {
+                __keepGoing = false
+                
+                if let node = dequeueAny() {
+                    
+                    if Bool.random() {
+                        reenqueue(node: node)
+                        __keepGoing = true
+                    } else {
+                        
+                        let nodeSize = node.size
+                        
+                        let fitSize = CGSize(width: tw, height: 1024.0)
+                        
+                        let frame = fitSize.getAspectFit(nodeSize)
+                        
+                        if (y + frame.height) > layoutHeight {
+                            reenqueue(node: node)
+                        } else {
+                            __keepGoing = true
+                            
+                            let x = CGFloat(__x) * tw
+                            
+                            let concept = ConceptModel(id: baseID, x: x, y: y, width: frame.width, height: frame.height, image: node.image, node: node)
+                            
+                            concepts.append(concept)
+                            
+                            y += frame.height
+                            
+                        }
+                    }
+                }
+            }
+        }
+        
+        
+        
+        for concept in concepts {
+            result.add(node: concept.node)
+        }
+        
         
         /*
         for i in 0..<1 {
@@ -52,6 +104,7 @@ class CentralConceptLayout: ConceptLayout {
         }
         */
         
+        /*
         var upperCap = 8
         if layoutWidth > layoutHeight {
             upperCap = 2
@@ -75,7 +128,12 @@ class CentralConceptLayout: ConceptLayout {
                 result.usedWords.append(node)
                 concepts.append(concept)
                 
+                
+                rects.append(RectModel(id: baseID, x: 5, y: y, width: frame.width, height: frame.height, color: UIColor.red.withAlphaComponent(0.5)))
+                
                 y += frame.height + 10.0
+                
+                
             }
         }
         
@@ -97,9 +155,12 @@ class CentralConceptLayout: ConceptLayout {
                 result.usedWords.append(node)
                 concepts.append(concept)
                 
+                rects.append(RectModel(id: baseID, x: layoutWidth - frame.width - 5, y: y, width: frame.width, height: frame.height, color: UIColor.blue.withAlphaComponent(0.5)))
+                
                 y += frame.height + 10.0
             }
         }
+        */
         
         return result
         
@@ -180,4 +241,37 @@ class CentralConceptLayout: ConceptLayout {
         */
         
     }
+    
+    private func addCenterPiece(gridWidth: Int) -> CGRect {
+        
+        var fitBox = CGRect(x: centerX - 64.0, y: centerY - 64.0, width: 128.0, height: 128.0)
+        
+        var _picked: ImageCollectionNode?
+        if let idea = dequeueIdea() {
+            _picked = idea
+        } else {
+            if let word = dequeueWord() {
+                _picked = word
+            }
+        }
+        guard let picked = _picked else {
+            return fitBox
+        }
+        
+        
+        
+        
+        if gridWidth <= 1 {
+        
+            let big = findLargestAppropriateColumnWidthForSizeOne()
+            
+        }
+        
+        
+        
+        
+        return fitBox
+    }
+    
+    
 }

@@ -11,19 +11,24 @@ struct CentralConceptViewContent: View {
     @ObservedObject var centralConceptViewModel: CentralConceptViewModel
     @ObservedObject var mainContainerViewModel: MainContainerViewModel
     let concepts: [ConceptModel]
+    let rects: [RectModel]
     var x: [CGFloat]
     var y: [CGFloat]
     var width: [CGFloat]
     var height: [CGFloat]
     var selected: [Bool]
-    let range: Range<Int>
+    let conceptsRange: Range<Int>
+    let rectsRange: Range<Int>
     
-    init(centralConceptViewModel: CentralConceptViewModel, mainContainerViewModel: MainContainerViewModel, concepts: [ConceptModel]) {
+    
+    init(centralConceptViewModel: CentralConceptViewModel, mainContainerViewModel: MainContainerViewModel, concepts: [ConceptModel], rects: [RectModel]) {
         self.centralConceptViewModel = centralConceptViewModel
         self.mainContainerViewModel = mainContainerViewModel
         self.concepts = concepts
+        self.rects = rects
         
-        range = 0..<concepts.count
+        conceptsRange = 0..<concepts.count
+        rectsRange = 0..<rects.count
         
         x = [CGFloat](repeating: 0.0, count: concepts.count)
         y = [CGFloat](repeating: 0.0, count: concepts.count)
@@ -40,10 +45,33 @@ struct CentralConceptViewContent: View {
         }
     }
     
+    //@ViewBuilder
     var body: some View {
-        ForEach(range, id: \.self) { index in
+        
+        ForEach(rectsRange, id: \.self) { index in
+            rect(index: index)
+        }
+
+        ForEach(conceptsRange, id: \.self) { index in
             cell(index: index)
         }
+    }
+    
+    func rect(index: Int) -> some View {
+        
+        let _rect = rects[index]
+        
+        return ZStack {
+            
+            ZStack {
+                
+            }
+            .frame(width: _rect.width, height: _rect.height)
+            .background(RoundedRectangle(cornerRadius: 8.0).fill().foregroundColor(Color(uiColor: _rect.color)))
+        }
+        .frame(width: _rect.width, height: _rect.height)
+        .background(RoundedRectangle(cornerRadius: 8.0).stroke(style: StrokeStyle(lineWidth: 2)).foregroundColor(Color(uiColor: _rect.color)))
+        .offset(x: _rect.x, y: _rect.y)
     }
     
     func cell(index: Int) -> some View {

@@ -75,7 +75,7 @@ class MainContainerViewModel: ObservableObject {
         if _firstShuffle {
             if (previouslyUsedWords.count > 0) || (previouslyUsedIdeas.count > 0) {
                 _firstShuffle = false
-                saveHistoryStateShuffle()
+                saveHistoryState()
             }
         }
         
@@ -83,14 +83,10 @@ class MainContainerViewModel: ObservableObject {
                                    previouslyUsedWords: previouslyUsedWords,
                                    previouslyUsedIdeas: previouslyUsedIdeas)
         
-        
         build()
         
-        print("previouslyUsedWords = \(previouslyUsedWords)")
-        print("previouslyUsedIdeas = \(previouslyUsedIdeas)")
-        
         if (previouslyUsedWords.count > 0) || (previouslyUsedIdeas.count > 0) {
-            saveHistoryStateShuffle()
+            saveHistoryState()
         }
     }
     
@@ -99,7 +95,7 @@ class MainContainerViewModel: ObservableObject {
         case .collage:
             break
         case .centralIdea:
-            centralConceptViewModel?.build()
+            centralConceptViewModel?.build(gridWidth: gridWidth)
         case .pairings:
             break
         }
@@ -117,7 +113,6 @@ class MainContainerViewModel: ObservableObject {
     func selectLeftModeSegment() {
         DispatchQueue.main.async {
             self.centralConceptViewModelDispose()
-            
             self.appMode = .collage
         }
     }
@@ -166,13 +161,12 @@ class MainContainerViewModel: ObservableObject {
     }
     
     func isUndoEnabled() -> Bool {
-        
-        print("can undo: \(historyController.canUndo()) count: \(historyController.historyStack.count) index: \(historyController.historyIndex)")
+        //print("can undo: \(historyController.canUndo()) count: \(historyController.historyStack.count) index: \(historyController.historyIndex)")
         return historyController.canUndo()
     }
     
     func isRedoEnabled() -> Bool {
-        print("can redo: \(historyController.canRedo()) count: \(historyController.historyStack.count) index: \(historyController.historyIndex)")
+        //print("can redo: \(historyController.canRedo()) count: \(historyController.historyStack.count) index: \(historyController.historyIndex)")
         return historyController.canRedo()
     }
     
@@ -236,20 +230,45 @@ class MainContainerViewModel: ObservableObject {
     
     func clickLeftGridSizeStepper() {
         if gridWidth > minGridWidth {
+            
+            if _firstShuffle {
+                _firstShuffle = false
+                saveHistoryState()
+            }
+            
             gridWidth -= 1
-            DispatchQueue.main.async { self.objectWillChange.send() }
+            build()
+            
+            saveHistoryState()
         }
     }
     
     func clickRightGridSizeStepper() {
         if gridWidth < maxGridWidth {
+            
+            if _firstShuffle {
+                _firstShuffle = false
+                saveHistoryState()
+            }
+            
             gridWidth += 1
-            DispatchQueue.main.async { self.objectWillChange.send() }
+            build()
+            
+            saveHistoryState()
         }
     }
     
     func toggleSelected(concept: ConceptModel) {
+        
+        if _firstShuffle {
+            _firstShuffle = false
+            saveHistoryState()
+        }
+        
         imageBucket.toggleSelected(node: concept.node)
+        
+        saveHistoryState()
+        
         DispatchQueue.main.async { self.objectWillChange.send() }
     }
     
@@ -259,29 +278,33 @@ class MainContainerViewModel: ObservableObject {
     
     func applyHistoryState(_ state: HistoryState) {
         
+        let imageBucketState = state.imageBucketState
+        imageBucket.loadFrom(state: imageBucketState)
+        build()
         
-        
-        if let shuffleState = state as? HistoryStateShuffle {
-            let imageBucketState = shuffleState.imageBucketState
-            
-            print("applyHistoryState => \(imageBucketState.wordsFileNames)")
-            
-            imageBucket.loadFrom(state: imageBucketState)
-            build()
+        /*
+        if let selectionState = state as? HistoryStateSelection {
+            let imageBucketSelectionState = selectionState.imageBucketSelectionState
+            imageBucket.loadSelectionFrom(state: imageBucketSelectionState)
+            DispatchQueue.main.async { self.objectWillChange.send() }
         }
-        
+        */
     }
     
-    func saveHistoryStateShuffle() {
-        
+    func saveHistoryState() {
         let imageBucketState = imageBucket.saveToState()
-        let historyState = HistoryStateShuffle(imageBucketState: imageBucketState)
-        
-        print("saveHistoryState => \(imageBucketState.wordsFileNames)")
-        
+        let historyState = HistoryState(imageBucketState: imageBucketState)
         historyController.historyAdd(state: historyState)
-        
     }
+    
+    /*
+    func saveHistoryStateSelection() {
+        
+        let imageBucketSelectionState = imageBucket.saveSelectionToState()
+        let historyState = HistoryStateSelection(imageBucketSelectionState: imageBucketSelectionState)
+        historyController.historyAdd(state: historyState)
+    }
+    */
     
     func undoIntent() {
         historyController.undo()

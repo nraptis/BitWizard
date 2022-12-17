@@ -8,6 +8,8 @@
 import Foundation
 
 class HistoryState {
-    
-    
+    let imageBucketState: ImageBucketState
+    init(imageBucketState: ImageBucketState) {
+        self.imageBucketState = imageBucketState
+    }
 }

@@ -41,33 +41,42 @@ struct BottomMenuRedoButtonChunk: View {
                     }
                     .disabled(!enabled)
                     
-                    if enabled {
-                        if ApplicationController.isIpad() {
-                            Image(systemName: "arrow.right")
-                                .font(.system(size: 42))
-                                .foregroundColor(.white)
+                    
+                    ZStack {
+                        if enabled {
+                            if ApplicationController.isIpad() {
+                                Image(systemName: "arrow.right")
+                                    .font(.system(size: 42))
+                                    .foregroundColor(.white)
+                                
+                            } else {
+                                Image(systemName: "arrow.right")
+                                    .font(.system(size: 34))
+                                    .foregroundColor(.white)
+                                
+                            }
                         } else {
-                            Image(systemName: "arrow.right")
-                                .font(.system(size: 34))
-                                .foregroundColor(.white)
-                        }
-                    } else {
-                        if ApplicationController.isIpad() {
-                            Image(systemName: "arrow.right")
-                                .font(.system(size: 42))
-                                .foregroundColor(Color("limestone"))
-                        } else {
-                            Image(systemName: "arrow.right")
-                                .font(.system(size: 34))
-                                .foregroundColor(Color("limestone"))
+                            if ApplicationController.isIpad() {
+                                Image(systemName: "arrow.right")
+                                    .font(.system(size: 42))
+                                    .foregroundColor(Color("limestone"))
+                                
+                            } else {
+                                Image(systemName: "arrow.right")
+                                    .font(.system(size: 34))
+                                    .foregroundColor(Color("limestone"))
+                                
+                            }
                         }
                     }
+                    .allowsHitTesting(false)
                     
                      ZStack {
                      
                      }
                      .frame(width: height - (paddingLeft + paddingRight), height: height - (paddingTop + paddingBottom))
                      .background(RoundedRectangle(cornerRadius: 12.0).stroke(style: StrokeStyle(lineWidth: 2)).foregroundColor(Color("limestone")))
+                    
                 }
                 .frame(width: height - (paddingLeft + paddingRight), height: height - (paddingTop + paddingBottom))
             }

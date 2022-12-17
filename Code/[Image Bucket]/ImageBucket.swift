@@ -241,34 +241,23 @@ class ImageBucket {
     
     
     func saveToState() -> ImageBucketState {
-        ImageBucketState(collectionWords: collectionWords,
-                         collectionIdeas: collectionIdeas,
-                         randomBucket: randomBucket,
-                         ignoreBag: ignoreBag,
-                         selectedBag: selectedBag,
-                         recentlySelectedBag: recentlySelectedBag,
-                         words: words,
-                         ideas: ideas)
+        let selectionState = ImageBucketSelectionState(selectedBag: selectedBag,
+                                                       recentlySelectedBag: recentlySelectedBag)
+        return ImageBucketState(//collectionWords: collectionWords,
+                                //collectionIdeas: collectionIdeas,
+                                randomBucket: randomBucket,
+                                ignoreBag: ignoreBag,
+                                selectionState: selectionState,
+                                words: words,
+                                ideas: ideas)
     }
     
     func loadFrom(state: ImageBucketState) {
-        collectionWords.loadFrom(state: state.collectionWordsState)
-        collectionIdeas.loadFrom(state: state.collectionIdeasState)
+        //collectionWords.loadFrom(state: state.collectionWordsState)
+        //collectionIdeas.loadFrom(state: state.collectionIdeasState)
         
         randomBucket.loadFrom(state: state.randomBucketState)
         ignoreBag.loadFrom(state: state.ignoreBagState)
-        
-        selectedBag.removeAll(keepingCapacity: true)
-        for fileName in state.selectedBagContents {
-            let node = nodeFrom(fileName: fileName)
-            selectedBag.insert(node)
-        }
-        
-        recentlySelectedBag.removeAll(keepingCapacity: true)
-        for fileName in state.recentlySelectedBagContents {
-            let node = nodeFrom(fileName: fileName)
-            recentlySelectedBag.insert(node)
-        }
         
         words.removeAll(keepingCapacity: true)
         for fileName in state.wordsFileNames {
@@ -280,6 +269,26 @@ class ImageBucket {
         for fileName in state.ideasFileNames {
             let node = nodeFrom(fileName: fileName)
             ideas.append(node)
+        }
+        loadSelectionFrom(state: state.selectionState)
+    }
+    
+    func saveSelectionToState() -> ImageBucketSelectionState {
+        ImageBucketSelectionState(selectedBag: selectedBag,
+                                  recentlySelectedBag: recentlySelectedBag)
+    }
+    
+    func loadSelectionFrom(state: ImageBucketSelectionState) {
+        selectedBag.removeAll(keepingCapacity: true)
+        for fileName in state.selectedBagContents {
+            let node = nodeFrom(fileName: fileName)
+            selectedBag.insert(node)
+        }
+        
+        recentlySelectedBag.removeAll(keepingCapacity: true)
+        for fileName in state.recentlySelectedBagContents {
+            let node = nodeFrom(fileName: fileName)
+            recentlySelectedBag.insert(node)
         }
     }
     

@@ -30,15 +30,3 @@ class ImageBucketIgnoreNode {
         ticks = state.ticks
     }
 }
-
-/*
-extension ImageBucketIgnoreNode: Hashable {
-    static func == (lhs: ImageBucketIgnoreNode, rhs: ImageBucketIgnoreNode) -> Bool {
-        lhs.node == rhs.node
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(node)
-    }
-}
-*/

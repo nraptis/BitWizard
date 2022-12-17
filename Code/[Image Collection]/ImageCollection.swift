@@ -105,6 +105,9 @@ class ImageCollection {
         var fudge = 0
         let fudgeMax = count + (count >> 1) + 12
         
+        var lastIndex = fetchOffset - 1
+        if lastIndex < 0 { lastIndex = nodes.count - 1 }
+        
         while (usedSet.count < count) && (usedSet.count < nodes.count) && (fudge < fudgeMax) {
             let node = nodes[fetchOffset]
             if !ignoreBag.contains(node) && !usedSet.contains(node) {
@@ -116,10 +119,15 @@ class ImageCollection {
                 shuffle()
             }
             fudge += 1
+            
+            if fetchOffset == lastIndex {
+                break
+            }
         }
         return result
     }
     
+    /*
     func saveToState() -> ImageCollectionState {
         ImageCollectionState(fetchOffset: fetchOffset, nodes: nodes)
     }
@@ -139,4 +147,5 @@ class ImageCollection {
             }
         }
     }
+    */
 }
