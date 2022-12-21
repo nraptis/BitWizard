@@ -7,10 +7,10 @@
 
 import UIKit
 
-struct ConceptModel {
-    let id: Int
-    let x: CGFloat
-    let y: CGFloat
+class ConceptModel {
+    var id: Int
+    var x: CGFloat
+    var y: CGFloat
     let width: CGFloat
     let height: CGFloat
     let image: UIImage

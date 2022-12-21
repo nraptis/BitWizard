@@ -54,7 +54,12 @@ struct MainContainerView: View {
     }
     
     func centralConceptView(centralConceptViewModel: CentralConceptViewModel, geometry: GeometryProxy, mainContentHeight: CGFloat) -> some View {
-        centralConceptViewModel.register(layoutWidth: geometry.size.width, layoutHeight: mainContentHeight, gridWidth: mainContainerViewModel.gridWidth)
+        
+        if geometry.size.width > geometry.size.height {
+            centralConceptViewModel.register(layoutWidth: geometry.size.width, layoutHeight: mainContentHeight, gridWidth: mainContainerViewModel.gridWidth + 2)
+        } else {
+            centralConceptViewModel.register(layoutWidth: geometry.size.width, layoutHeight: mainContentHeight, gridWidth: mainContainerViewModel.gridWidth)
+        }
         return CentralConceptView(centralConceptViewModel: centralConceptViewModel,
                                   mainContainerViewModel: mainContainerViewModel,
                                   width: geometry.size.width,

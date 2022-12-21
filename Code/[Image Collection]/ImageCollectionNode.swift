@@ -46,6 +46,14 @@ extension ImageCollectionNode {
         cache.height(node: self)
     }
     
+    var ratioWH: CGFloat {
+        cache.ratioWH(node: self)
+    }
+    
+    var ratioHW: CGFloat {
+        cache.ratioHW(node: self)
+    }
+    
     var size: CGSize {
         CGSize(width: width, height: height)
     }
@@ -86,7 +94,6 @@ extension ImageCollectionNode {
         let cache = ImageCache()
         let node = ImageCollectionNode(app: app, fileName: "friday", fileExtension: "png", id: 3_000_000_004, cache: cache, type: .word)
         return node
-        
     }
     
     static func previewIdea() -> ImageCollectionNode {

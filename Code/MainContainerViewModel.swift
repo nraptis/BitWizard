@@ -52,6 +52,60 @@ class MainContainerViewModel: ObservableObject {
         self.collectionIdeas.wake()
         
         shuffle()
+        
+        //findAverageSizes()
+    }
+    
+    open func findAverageSizes() {
+        
+        var widthWords: Double = 0.0
+        var heightWords: Double = 0.0
+        var countWords: Int = 0
+        for node in collectionWords.nodes {
+            widthWords += node.width
+            heightWords += node.height
+            countWords += 1
+        }
+        
+        var widthIdeas: Double = 0.0
+        var heightIdeas: Double = 0.0
+        var countIdeas: Int = 0
+        for node in collectionIdeas.nodes {
+            widthIdeas += node.width
+            heightIdeas += node.height
+            countIdeas += 1
+        }
+        
+        let countTotal = countWords + countIdeas
+        var widthTotal = widthWords + widthIdeas
+        var heightTotal = heightWords + heightIdeas
+        
+        if countWords > 0 {
+            widthWords /= Double(countWords)
+            heightWords /= Double(countWords)
+            let ratioWords = widthWords / heightWords
+            print("width words: \(widthWords)")
+            print("height words: \(heightWords)")
+            print("ratio words: \(ratioWords)")
+        }
+        
+        if countIdeas > 0 {
+            widthIdeas /= Double(countIdeas)
+            heightIdeas /= Double(countIdeas)
+            let ratioIdeas = widthIdeas / heightIdeas
+            print("width ideas: \(widthIdeas)")
+            print("height ideas: \(heightIdeas)")
+            print("ratio ideas: \(ratioIdeas)")
+        }
+        
+        if countTotal > 0 {
+            widthTotal /= Double(countTotal)
+            heightTotal /= Double(countTotal)
+            let ratioTotal = widthTotal / heightTotal
+            print("width total: \(widthTotal)")
+            print("height total: \(heightTotal)")
+            print("ratio total: \(ratioTotal)")
+        }
     }
     
     private var _firstShuffle: Bool = true
@@ -79,7 +133,8 @@ class MainContainerViewModel: ObservableObject {
             }
         }
         
-        imageBucket.beginFreshPull(maximumGridCount: 24,
+        //TODO: maximumGridCount
+        imageBucket.beginFreshPull(maximumGridCount: 5000000,
                                    previouslyUsedWords: previouslyUsedWords,
                                    previouslyUsedIdeas: previouslyUsedIdeas)
         
@@ -91,14 +146,26 @@ class MainContainerViewModel: ObservableObject {
     }
     
     func build() {
+        
         switch appMode {
         case .collage:
             break
         case .centralIdea:
-            centralConceptViewModel?.build(gridWidth: gridWidth)
+            if let centralConceptViewModel = centralConceptViewModel {
+                if centralConceptViewModel.layout.layoutWidth > centralConceptViewModel.layout.layoutHeight {
+                    centralConceptViewModel.build(gridWidth: gridWidth + 2)
+                } else {
+                    centralConceptViewModel.build(gridWidth: gridWidth)
+                }
+            }
         case .pairings:
             break
         }
+    }
+    
+    func handleMemoryWarning() {
+        imageBucket.handleMemoryWarning()
+        cache.handleMemoryWarning()
     }
     
     var centralConceptViewModel: CentralConceptViewModel?

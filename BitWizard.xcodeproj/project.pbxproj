@@ -214,6 +214,7 @@
 		0D6F0751294B9A5800ACB9A4 /* RandomBucketState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D6F0750294B9A5800ACB9A4 /* RandomBucketState.swift */; };
 		0D6F0753294BCC8E00ACB9A4 /* ImageBucketIgnoreBagState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D6F0752294BCC8E00ACB9A4 /* ImageBucketIgnoreBagState.swift */; };
 		0D6F0755294BE16500ACB9A4 /* ImageBucketIgnoreNodeState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D6F0754294BE16500ACB9A4 /* ImageBucketIgnoreNodeState.swift */; };
+		0D7020FB2950DDF700F8AE54 /* ConceptStrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D7020FA2950DDF600F8AE54 /* ConceptStrip.swift */; };
 		0D7DD833294654D8003C34ED /* ImageCollectionWords+ImageNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D7DD832294654D8003C34ED /* ImageCollectionWords+ImageNames.swift */; };
 		0D7DD835294654E4003C34ED /* ImageCollectionIdeas+ImageNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D7DD834294654E4003C34ED /* ImageCollectionIdeas+ImageNames.swift */; };
 		0D7DD83A294657D3003C34ED /* ImageBucket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D7DD839294657D3003C34ED /* ImageBucket.swift */; };
@@ -482,6 +483,7 @@
 		0D6F0750294B9A5800ACB9A4 /* RandomBucketState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RandomBucketState.swift; sourceTree = "<group>"; };
 		0D6F0752294BCC8E00ACB9A4 /* ImageBucketIgnoreBagState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageBucketIgnoreBagState.swift; sourceTree = "<group>"; };
 		0D6F0754294BE16500ACB9A4 /* ImageBucketIgnoreNodeState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageBucketIgnoreNodeState.swift; sourceTree = "<group>"; };
+		0D7020FA2950DDF600F8AE54 /* ConceptStrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConceptStrip.swift; sourceTree = "<group>"; };
 		0D7DD832294654D8003C34ED /* ImageCollectionWords+ImageNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImageCollectionWords+ImageNames.swift"; sourceTree = "<group>"; };
 		0D7DD834294654E4003C34ED /* ImageCollectionIdeas+ImageNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImageCollectionIdeas+ImageNames.swift"; sourceTree = "<group>"; };
 		0D7DD839294657D3003C34ED /* ImageBucket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageBucket.swift; sourceTree = "<group>"; };
@@ -917,6 +919,7 @@
 			children = (
 				0DC9FB31294D472A0041AE54 /* RectModel.swift */,
 				0DDA28942943B63C00A48140 /* ConceptModel.swift */,
+				0D7020FA2950DDF600F8AE54 /* ConceptStrip.swift */,
 				0DDA28952943B63C00A48140 /* ConceptLayout.swift */,
 				0D87F0742949E9A5008B5B12 /* ConceptCell.swift */,
 			);
@@ -1242,6 +1245,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0DDA28C72943B63C00A48140 /* ConceptModel.swift in Sources */,
+				0D7020FB2950DDF700F8AE54 /* ConceptStrip.swift in Sources */,
 				0DDA28BA2943B63C00A48140 /* SegmentMiddle.swift in Sources */,
 				0D6F0753294BCC8E00ACB9A4 /* ImageBucketIgnoreBagState.swift in Sources */,
 				0DDA28CB2943B63C00A48140 /* TopMenuViewTwoLine.swift in Sources */,

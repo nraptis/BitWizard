@@ -239,6 +239,9 @@ class ImageBucket {
         return dummyNodeWord
     }
     
+    func handleMemoryWarning() {
+        
+    }
     
     func saveToState() -> ImageBucketState {
         let selectionState = ImageBucketSelectionState(selectedBag: selectedBag,
