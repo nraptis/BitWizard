@@ -135,8 +135,6 @@ class ConceptLayout {
     @discardableResult
     func placeStripsIn(rect: CGRect, gridWidth: Int) -> StripPlacementResult {
         
-        print("place strips in \(rect.minX) \(rect.minY), \(rect.width) \(rect.height)")
-        
         let result = StripPlacementResult()
         result.rect = rect
         
@@ -441,7 +439,9 @@ class ConceptLayout {
             }
         }
         
-        
+        for strip in strips {
+            capOff(strip: strip)
+        }
         
         for strip in strips {
             strip.layoutConceptsFromTopDown(bucket: randomBucket)
@@ -460,8 +460,6 @@ class ConceptLayout {
 
 
 extension ConceptLayout {
-    
-    
     
     /*
     private var _usedNodes = Set<ImageCollectionNode>()
@@ -708,3 +706,212 @@ extension ConceptLayout {
     }
     
 }
+
+
+extension ConceptLayout {
+    
+    func capOff(strip: ConceptStrip) {
+        
+        var nodes = [ImageCollectionNode]()
+        for node in _selectedWords where !_usedNodes.contains(node) {
+            node.tempSelected = true
+            nodes.append(node)
+        }
+        for node in _selectedIdeas where !_usedNodes.contains(node) {
+            node.tempSelected = true
+            nodes.append(node)
+        }
+        for node in _unselectedWords where !_usedNodes.contains(node) {
+            node.tempSelected = false
+            nodes.append(node)
+        }
+        for node in _unselectedIdeas where !_usedNodes.contains(node) {
+            node.tempSelected = false
+            nodes.append(node)
+        }
+        
+        for node in nodes {
+            let ratio = getWidthRatio(node: node, strip: strip)
+            let adjustedWidth = node.width * ratio
+            let adjustedHeight = node.height * ratio
+            node.tempWidth = strip.width
+            node.tempHeight = node.height * ratio
+        }
+        
+        nodes.sort {
+            $0.tempHeight < $1.tempHeight
+        }
+        
+        for node in nodes {
+            //print("\(node.fileName) => \(node.tempHeight)")
+        }
+        
+        let match = capOffFindClosestMatch(sorted: nodes, strip: strip)
+        
+        
+        for a in match {
+            _usedNodes.insert(a)
+            strip.add(node: a, ratio: getWidthRatio(node: a, strip: strip))
+        }
+        
+        /*
+        var tempWidth: CGFloat = 0.0
+        var tempHeight: CGFloat = 0.0
+        var tempSelected: Bool = false
+        */
+        
+        //extension ConceptLayout {
+        
+        
+    }
+    
+    func logSum(result: [ImageCollectionNode], strip: ConceptStrip) {
+        
+        let remainingHeight = strip.height - strip.conceptsHeight
+        let resultHeight = result.reduce(0) { val, node in
+            val + node.tempHeight
+        }
+        print("____________")
+        print("best match for \(strip.width) x \(strip.height), remaining: \(remainingHeight), \(result.count) nodes...")
+        for (index, node) in result.enumerated() {
+            print("node[\(index)][\(node.fileName)] height: \(node.tempHeight), total: \(resultHeight)")
+        }
+        print("____________")
+    }
+    
+    func capOffFindClosestMatch(sorted: [ImageCollectionNode], strip: ConceptStrip) -> [ImageCollectionNode] {
+        
+        let remainingHeight = strip.height - strip.conceptsHeight
+        
+        let bestOne = capOffFindClosestMatchOneSum(sorted: sorted, target: remainingHeight)
+        let bestTwo = capOffFindClosestMatchTwoSum(sorted: sorted, target: remainingHeight)
+        let bestThree = capOffFindClosestMatchThreeSum(sorted: sorted, target: remainingHeight)
+        
+        let sum1 = bestOne.reduce(0) { val, node in
+            val + node.tempHeight
+        }
+        let sum2 = bestTwo.reduce(0) { val, node in
+            val + node.tempHeight
+        }
+        let sum3 = bestThree.reduce(0) { val, node in
+            val + node.tempHeight
+        }
+        
+        let diff1 = remainingHeight - sum1
+        let diff2 = remainingHeight - sum2
+        let diff3 = remainingHeight - sum3
+        
+        if diff1 < diff2 {
+            if diff1 < diff3 {
+                return bestOne
+            } else {
+                return bestThree
+            }
+        } else {
+            if diff2 < diff3 {
+                return bestTwo
+            } else {
+                return bestThree
+            }
+        }
+    }
+    
+    func capOffFindClosestMatchOneSum(sorted: [ImageCollectionNode], target: CGFloat) -> [ImageCollectionNode] {
+        var result = [ImageCollectionNode]()
+        if sorted.count <= 0 {
+            return result
+        }
+        
+        var bestDistance = CGFloat(1_000_000_000.0)
+        for index in 0..<sorted.count {
+            let node = sorted[index]
+            if node.tempHeight <= target {
+                let diff = target - node.tempHeight
+                if diff < bestDistance {
+                    bestDistance = diff
+                    result = [node]
+                }
+            }
+        }
+        return result
+    }
+    
+    func capOffFindClosestMatchTwoSum(sorted: [ImageCollectionNode], target: CGFloat) -> [ImageCollectionNode] {
+        var result = [ImageCollectionNode]()
+        if sorted.count <= 1 {
+            return result
+        }
+        
+        var bestDistance = CGFloat(1_000_000_000.0)
+        
+        var lo = 0
+        var hi = sorted.count - 1
+        
+        var chosenIndex1 = lo
+        var chosenIndex2 = hi
+        
+        while lo < hi {
+            let sum = sorted[lo].tempHeight + sorted[hi].tempHeight
+            if sum <= target {
+                let diff = target - sum
+                if diff < bestDistance {
+                    bestDistance = diff
+                    chosenIndex1 = lo
+                    chosenIndex2 = hi
+                }
+            }
+            
+            if sum < target {
+                lo += 1
+            } else {
+                hi -= 1
+            }
+        }
+        result = [sorted[chosenIndex1], sorted[chosenIndex2]]
+        return result
+    }
+    
+    func capOffFindClosestMatchThreeSum(sorted: [ImageCollectionNode], target: CGFloat) -> [ImageCollectionNode] {
+        var result = [ImageCollectionNode]()
+        if sorted.count <= 2 {
+            return result
+        }
+        
+        var chosenIndex1 = 0
+        var chosenIndex2 = 1
+        var chosenIndex3 = 2
+        
+        var bestDistance = CGFloat(1_000_000_000.0)
+        for outer in 0..<(sorted.count - 2) {
+            var lo = outer + 1
+            var hi = sorted.count - 1
+            while lo < hi {
+                let sum = sorted[outer].tempHeight + sorted[lo].tempHeight + sorted[hi].tempHeight
+                if sum <= target {
+                    let diff = target - sum
+                    if diff < bestDistance {
+                        bestDistance = diff
+                        chosenIndex1 = outer
+                        chosenIndex2 = lo
+                        chosenIndex3 = hi
+                    }
+                }
+                if sum < target {
+                    lo += 1
+                } else {
+                    hi -= 1
+                }
+            }
+        }
+        result = [sorted[chosenIndex1], sorted[chosenIndex2], sorted[chosenIndex3]]
+        return result
+    }
+    
+    
+    
+}
+
+//var adjustedWidth: CGFloat = 0.0
+//var adjustedHeight: CGFloat = 0.0
+
+

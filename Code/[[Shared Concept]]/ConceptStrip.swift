@@ -23,7 +23,6 @@ class ConceptStrip {
     var capCutoffHeightMin: CGFloat
     var capCutoffHeightMax: CGFloat
     
-    
     var concepts = [ConceptModel]()
     var conceptsHeight: CGFloat = 0.0
     
