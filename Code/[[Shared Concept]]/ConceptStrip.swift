@@ -9,13 +9,20 @@ import Foundation
 
 class ConceptStrip {
     
-    static let capCutoffHeightFactor = 3.0
+    //Idea: Cutoff Factor Lo, Cutoff Factor Hi
+    // Can only try to add when < Lo,
+    // But if goes > Hi, cannot add
+    // This will guarantee some wiggle room
+    static let capCutoffHeightFactorMin = 1.0
+    static let capCutoffHeightFactorMax = 1.0
     
     let x: CGFloat
     let y: CGFloat
     let width: CGFloat
     let height: CGFloat
-    var capCutoffHeight: CGFloat
+    var capCutoffHeightMin: CGFloat
+    var capCutoffHeightMax: CGFloat
+    
     
     var concepts = [ConceptModel]()
     var conceptsHeight: CGFloat = 0.0
@@ -28,17 +35,28 @@ class ConceptStrip {
         self.y = y
         self.width = width
         self.height = height
-        self.capCutoffHeight = height //- (Self.capCutoffHeightFactor * width)
+        self.capCutoffHeightMin = height - (Self.capCutoffHeightFactorMin * width)
+        self.capCutoffHeightMax = height - (Self.capCutoffHeightFactorMax * width)
     }
     
     func shouldBeCappedOff() -> Bool {
-        if conceptsHeight < capCutoffHeight {
+        if conceptsHeight < capCutoffHeightMin {
             return false
         } else {
             return true
         }
     }
     
+    func canAddWithoutCapping(node: ImageCollectionNode, ratio: CGFloat) -> Bool  {
+        let conceptHeight = node.height * ratio
+        if conceptsHeight + conceptHeight <= capCutoffHeightMax {
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    /*
     func canAdd(node: ImageCollectionNode, ratio: CGFloat) -> Bool  {
         let conceptHeight = node.height * ratio
         if conceptsHeight + conceptHeight <= height {
@@ -47,9 +65,10 @@ class ConceptStrip {
             return false
         }
     }
+    */
     
     func add(node: ImageCollectionNode, ratio: CGFloat) {
-        var centerY = self.height * 0.5 + self.y
+        let centerY = self.height * 0.5 + self.y
         
         let conceptWidth = width
         let conceptHeight = node.height * ratio
@@ -73,13 +92,10 @@ class ConceptStrip {
     func add(concept: ConceptModel) {
         concepts.append(concept)
         conceptsHeight += concept.height
-        print("concepts[\(concepts.count)] height: \(conceptsHeight) (my height: \(height))")
     }
     
     func layoutConceptsFromTopDown(bucket: RandomBucket) {
-        
-        
-        var x: CGFloat = x
+        let x: CGFloat = x
         var y: CGFloat = y
         for concept in concepts {
             concept.x = x

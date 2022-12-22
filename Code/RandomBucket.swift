@@ -48,6 +48,10 @@ class RandomBucket {
         return result
     }
     
+    func nextBool() -> Bool {
+        nextInt(2) == 0
+    }
+    
     func nextFloat(_ factor: CGFloat) -> CGFloat {
         let result = valuesFloat[indexFloat] * factor
         indexFloat += 1

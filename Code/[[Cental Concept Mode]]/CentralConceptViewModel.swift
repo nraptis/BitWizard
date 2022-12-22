@@ -41,14 +41,9 @@ class CentralConceptViewModel: ObservableObject {
         let diff2 = abs(layoutHeight - layout.layoutHeight)
         let diff3 = gridWidth - layout.gridWidth
         
-        print("CentralConceptViewModel (\(layoutWidth) x \(layoutHeight)) SAME (\(layout.layoutWidth) x \(layout.layoutHeight))")
-        print("CentralConceptViewModel (\(gridWidth)) SAME (\(layout.gridWidth))")
-        
         guard (diff1 > 0.5) || (diff2 > 0.5) || (diff3 != 0) else {
-            print("CentralConceptViewModel Laying Out")
             return
         }
-        print("CentralConceptViewModel *NOT* Laying Out")
         
         layout.register(layoutWidth: layoutWidth,
                         layoutHeight: layoutHeight,
@@ -66,8 +61,6 @@ class CentralConceptViewModel: ObservableObject {
     }
     
     func build(gridWidth: Int) {
-        
-        print("CentralConceptViewModel Build (gridWidth: \(gridWidth))")
         
         let buildResponse = layout.build(gridWidth: gridWidth)
         

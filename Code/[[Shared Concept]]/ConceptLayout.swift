@@ -74,7 +74,7 @@ class ConceptLayout {
     let imageBucket: ImageBucket
     let randomBucket = RandomBucket()
     
-    var stripLayoutNodeType: LayoutNodeType = .word
+    var stripLayoutNodeType: LayoutNodeType = .any
     
     var baseID = 0
     func incrementBaseID() {
@@ -111,6 +111,7 @@ class ConceptLayout {
     
     required init(imageBucket: ImageBucket) {
         self.imageBucket = imageBucket
+        randomBucket.shuffle()
     }
     
     func register(layoutWidth: CGFloat,
@@ -492,26 +493,23 @@ extension ConceptLayout {
         if _unselectedWordsIndex < 0 { _unselectedWordsIndex = 0 }
         if _unselectedWordsIndex >= count { _unselectedWordsIndex = (count - 1) }
         
-        var lastIndex = _unselectedWordsIndex - 1
-        if lastIndex < 0 { lastIndex = (count - 1) }
-        
+        let startIndex = _unselectedWordsIndex
         while true {
             let node = _unselectedWords[_unselectedWordsIndex]
             _unselectedWordsIndex += 1
             if _unselectedWordsIndex == count {
                 _unselectedWordsIndex = 0
             }
-            print("lewp'd thru \(_unselectedWordsIndex)")
             if !_usedNodes.contains(node) {
                 let ratio = getWidthRatio(node: node, strip: strip)
-                if strip.canAdd(node: node, ratio: ratio) {
+                if strip.canAddWithoutCapping(node: node, ratio: ratio) {
                     _usedUnselectedWordsCount += 1
                     _usedNodes.insert(node)
                     strip.add(node: node, ratio: ratio)
                     return true
                 }
             }
-            if _unselectedWordsIndex == lastIndex {
+            if _unselectedWordsIndex == startIndex {
                 break
             }
         }
@@ -519,10 +517,121 @@ extension ConceptLayout {
     }
     
     private func addBestPossibleConceptConsideringOnlyUnselectedIdeaNodes(strip: ConceptStrip) -> Bool {
+        let count = _unselectedIdeas.count
+        guard count > 0 else { return false }
+        if _unselectedIdeasIndex < 0 { _unselectedIdeasIndex = 0 }
+        if _unselectedIdeasIndex >= count { _unselectedIdeasIndex = (count - 1) }
+        
+        let startIndex = _unselectedIdeasIndex
+        while true {
+            let node = _unselectedIdeas[_unselectedIdeasIndex]
+            _unselectedIdeasIndex += 1
+            if _unselectedIdeasIndex == count {
+                _unselectedIdeasIndex = 0
+            }
+            if !_usedNodes.contains(node) {
+                let ratio = getWidthRatio(node: node, strip: strip)
+                if strip.canAddWithoutCapping(node: node, ratio: ratio) {
+                    _usedUnselectedIdeasCount += 1
+                    _usedNodes.insert(node)
+                    strip.add(node: node, ratio: ratio)
+                    return true
+                }
+            }
+            if _unselectedIdeasIndex == startIndex {
+                break
+            }
+        }
         return false
     }
     
     private func addBestPossibleConceptConsideringOnlyUnselectedNodesMixed(strip: ConceptStrip) -> Bool {
+        
+        let countWords = _unselectedWords.count
+        guard countWords > 0 else { return addBestPossibleConceptConsideringOnlyUnselectedIdeaNodes(strip: strip) }
+        
+        let countIdeas = _unselectedIdeas.count
+        guard countIdeas > 0 else { return addBestPossibleConceptConsideringOnlyUnselectedWordNodes(strip: strip) }
+        
+        if _unselectedWordsIndex < 0 { _unselectedWordsIndex = 0 }
+        if _unselectedWordsIndex >= countWords { _unselectedWordsIndex = (countWords - 1) }
+        
+        if _unselectedIdeasIndex < 0 { _unselectedIdeasIndex = 0 }
+        if _unselectedIdeasIndex >= countIdeas { _unselectedIdeasIndex = (countIdeas - 1) }
+        
+        let startIndexWords = _unselectedWordsIndex
+        let startIndexIdeas = _unselectedIdeasIndex
+        
+        var finishedCheckingWords = false
+        var finishedCheckingIdeas = false
+        
+        var type = ImageCollectionNodeType.word
+        
+        while (finishedCheckingWords == false) || (finishedCheckingIdeas == false) {
+            
+            if finishedCheckingWords {
+                type = .idea
+            } else if finishedCheckingIdeas {
+                type = .word
+            } else {
+                if randomBucket.nextBool() {
+                    type = .idea
+                } else {
+                    type = .word
+                }
+            }
+            
+            switch type {
+            case .word:
+                
+                let node = _unselectedWords[_unselectedWordsIndex]
+                _unselectedWordsIndex += 1
+                if _unselectedWordsIndex == countWords {
+                    _unselectedWordsIndex = 0
+                }
+                if !_usedNodes.contains(node) {
+                    let ratio = getWidthRatio(node: node, strip: strip)
+                    if strip.canAddWithoutCapping(node: node, ratio: ratio) {
+                        _usedUnselectedWordsCount += 1
+                        _usedNodes.insert(node)
+                        strip.add(node: node, ratio: ratio)
+                        return true
+                    }
+                }
+                if _unselectedWordsIndex == startIndexWords {
+                    finishedCheckingWords = true
+                }
+            case .idea:
+                
+                let node = _unselectedIdeas[_unselectedIdeasIndex]
+                _unselectedIdeasIndex += 1
+                if _unselectedIdeasIndex == countIdeas {
+                    _unselectedIdeasIndex = 0
+                }
+                if !_usedNodes.contains(node) {
+                    let ratio = getWidthRatio(node: node, strip: strip)
+                    if strip.canAddWithoutCapping(node: node, ratio: ratio) {
+                        _usedUnselectedIdeasCount += 1
+                        _usedNodes.insert(node)
+                        strip.add(node: node, ratio: ratio)
+                        return true
+                    }
+                }
+                if _unselectedIdeasIndex == startIndexIdeas {
+                    finishedCheckingIdeas = true
+                }
+            }
+        }
+        
+        
+        //var lastIndexWords = _unselectedWordsIndex - 1
+        //if lastIndexWords < 0 { lastIndexWords = (countWords - 1) }
+        
+        //var lastIndex = _unselectedIdeasIndex - 1
+        //if lastIndex < 0 { lastIndex = (count - 1) }
+        
+        
+        
         return false
     }
     
@@ -566,7 +675,6 @@ extension ConceptLayout {
                 return false
             }
         }
-        return false
     }
     
     
@@ -597,7 +705,6 @@ extension ConceptLayout {
                 return false
             }
         }
-        return false
     }
     
 }
