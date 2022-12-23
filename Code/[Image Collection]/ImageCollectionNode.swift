@@ -23,9 +23,10 @@ class ImageCollectionNode {
     let type: ImageCollectionNodeType
     var didFailToLoad = false
     
-    var tempWidth: CGFloat = 0.0
-    var tempHeight: CGFloat = 0.0
+    var tempWidth: Int = 0
+    var tempHeight: Int = 0
     var tempSelected: Bool = false
+    var tempUsed: Bool = false
     
     init(app: ApplicationController, fileName: String, fileExtension: String, id: Int, cache: ImageCache, type: ImageCollectionNodeType) {
         self.app = app
