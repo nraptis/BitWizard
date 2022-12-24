@@ -184,9 +184,21 @@ class ConceptLayout {
     fileprivate var capoffThreeSumBucketDict = [Int: CapOffThreeSumBucket]()
     
     let imageBucket: ImageBucket
+    
+    
+    let randomBucketStored = RandomBucket()
     let randomBucket = RandomBucket()
     
-    var stripLayoutNodeType: LayoutNodeType = .any
+    
+    var stripLayoutNodeType: LayoutNodeType = .word
+    
+    required init(imageBucket: ImageBucket) {
+        self.imageBucket = imageBucket
+        
+        randomBucketStored.shuffle()
+        randomBucket.set(randomBucket: randomBucketStored)
+    }
+    
     
     var baseID = 0
     func incrementBaseID() {
@@ -221,10 +233,7 @@ class ConceptLayout {
         }
     }
     
-    required init(imageBucket: ImageBucket) {
-        self.imageBucket = imageBucket
-        randomBucket.shuffle()
-    }
+    
     
     func register(layoutWidth: CGFloat,
                   layoutHeight: CGFloat,
@@ -239,8 +248,10 @@ class ConceptLayout {
     @discardableResult
     func addStrip(x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat) -> ConceptStrip {
         let result = ConceptStrip(x: x, y: y, width: width, height: height)
+        /*
         rects.append(RectModel(id: baseID, x: x, y: y, width: width, height: height, color: UIColor.green.withAlphaComponent(0.5)))
         incrementBaseID()
+        */
         return result
     }
     
@@ -334,8 +345,6 @@ class ConceptLayout {
         return false
     }
     
-    //fileprivate var _usedNodes = Set<ImageCollectionNode>()
-    
     fileprivate var _unselectedWords = [ImageCollectionNode]()
     fileprivate var _unselectedIdeas = [ImageCollectionNode]()
     fileprivate var _selectedWords = [ImageCollectionNode]()
@@ -354,7 +363,36 @@ class ConceptLayout {
     fileprivate var _selectedIdeasCount = 0
     fileprivate var _usedSelectedIdeasCount = 0
     
+    func logFirstFew(name: String) {
+        
+        var selectedWords = _selectedWords.map { $0.fileName }
+        var unselectedWords = _unselectedWords.map { $0.fileName }
+        var selectedIdeas = _selectedIdeas.map { $0.fileName }
+        var unselectedIdeas = _unselectedIdeas.map { $0.fileName }
+        
+        if selectedWords.count > 10 {
+            selectedWords = Array(selectedWords[0..<10])
+        }
+        if unselectedWords.count > 10 {
+            unselectedWords = Array(unselectedWords[0..<10])
+        }
+        if selectedIdeas.count > 10 {
+            selectedIdeas = Array(selectedIdeas[0..<10])
+        }
+        if unselectedIdeas.count > 10 {
+            unselectedIdeas = Array(unselectedIdeas[0..<10])
+        }
+        
+        
+        print("layout (\(name)) s-w: \(selectedWords)")
+        print("layout (\(name)) u-w: \(unselectedWords)")
+        print("layout (\(name)) s-i: \(selectedIdeas)")
+        print("layout (\(name)) u-i: \(unselectedIdeas)")
+    }
+    
     func beginFreshBuild() {
+        
+        randomBucket.set(randomBucket: randomBucketStored)
         
         concepts.removeAll(keepingCapacity: true)
         rects.removeAll(keepingCapacity: true)
@@ -364,7 +402,7 @@ class ConceptLayout {
         _unselectedWords.removeAll(keepingCapacity: true)
         for node in imageBucket.words {
             node.tempUsed = false
-            if imageBucket.isSelected(node: node) {
+            if imageBucket.isSelectedNotRecently(node: node) {
                 _selectedWords.append(node)
             } else {
                 _unselectedWords.append(node)
@@ -381,7 +419,7 @@ class ConceptLayout {
         _unselectedIdeas.removeAll(keepingCapacity: true)
         for node in imageBucket.ideas {
             node.tempUsed = false
-            if imageBucket.isSelected(node: node) {
+            if imageBucket.isSelectedNotRecently(node: node) {
                 _selectedIdeas.append(node)
             } else {
                 _unselectedIdeas.append(node)
@@ -494,6 +532,7 @@ class ConceptLayout {
     }
     
     func addConceptsToEachStrip() {
+        
         var reloop = true
         while reloop {
             reloop = false
@@ -539,7 +578,6 @@ class ConceptLayout {
             }
         }
         
-        
         var indices = [Int]()
         for index in 0..<strips.count {
             indices.append(index)
@@ -548,6 +586,8 @@ class ConceptLayout {
             let rand = randomBucket.nextInt(strips.count)
             strips.swapAt(index, rand)
         }
+        
+        
         
         for index in indices {
             capOff(strip: strips[index], stripLayoutNodeType: stripLayoutNodeType)
@@ -1062,7 +1102,7 @@ extension ConceptLayout {
             }
         }
         
-        if stripLayoutNodeType == .any || stripLayoutNodeType == .word {
+        if stripLayoutNodeType == .any || stripLayoutNodeType == .idea {
             for node in _selectedIdeas where !node.tempUsed {
                 node.tempSelected = true
                 capoffNodes.append(node)
@@ -1330,6 +1370,7 @@ extension ConceptLayout {
     
     func capOffProceedWithMatches(strip: ConceptStrip, stripLayoutNodeType: LayoutNodeType) {
 
+        // Can we fill something with 1/1 selected?
         let capOffTypes = capOffTypesRandomized()
         for capOffType in capOffTypes {
             switch capOffType {
@@ -1352,14 +1393,17 @@ extension ConceptLayout {
             }
         }
         
+        // Can we fill something with 3/4 selected?
         if capOffTryFour(strip: strip, stripLayoutNodeType: stripLayoutNodeType, requiredSelectedCount: 3) {
             return
         }
         
+        // Can we fill something with 2/3 selected?
         if capOffTryThree(strip: strip, stripLayoutNodeType: stripLayoutNodeType, requiredSelectedCount: 2) {
             return
         }
         
+        // Can we fill something with 1/2 (2/4) selected?
         if randomBucket.nextBool() {
             if capOffTryTwo(strip: strip, stripLayoutNodeType: stripLayoutNodeType, requiredSelectedCount: 1) {
                 return
@@ -1376,14 +1420,17 @@ extension ConceptLayout {
             }
         }
         
+        // Can we fill something with 1/3 selected?
         if capOffTryThree(strip: strip, stripLayoutNodeType: stripLayoutNodeType, requiredSelectedCount: 1) {
             return
         }
         
+        // Can we fill something with 1/4 selected?
         if capOffTryFour(strip: strip, stripLayoutNodeType: stripLayoutNodeType, requiredSelectedCount: 1) {
             return
         }
         
+        // Can we fill something with 0 selected?
         for capOffType in capOffTypes {
             switch capOffType {
             case .one:
@@ -1637,4 +1684,3 @@ extension ConceptLayout {
         return false
     }
 }
-

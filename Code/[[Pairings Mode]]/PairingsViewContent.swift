@@ -1,14 +1,14 @@
 //
-//  CentralConceptViewContent.swift
+//  PairingsViewContent.swift
 //  BitWizard
 //
-//  Created by Nicky Taylor on 12/4/22.
+//  Created by Nicky Taylor on 12/24/22.
 //
 
 import SwiftUI
 
-struct CentralConceptViewContent: View {
-    @ObservedObject var centralConceptViewModel: CentralConceptViewModel
+struct PairingsViewContent: View {
+    @ObservedObject var pairingsViewModel: PairingsViewModel
     @ObservedObject var mainContainerViewModel: MainContainerViewModel
     let concepts: [ConceptModel]
     let rects: [RectModel]
@@ -20,8 +20,8 @@ struct CentralConceptViewContent: View {
     let conceptsRange: Range<Int>
     let rectsRange: Range<Int>
     
-    init(centralConceptViewModel: CentralConceptViewModel, mainContainerViewModel: MainContainerViewModel, concepts: [ConceptModel], rects: [RectModel]) {
-        self.centralConceptViewModel = centralConceptViewModel
+    init(pairingsViewModel: PairingsViewModel, mainContainerViewModel: MainContainerViewModel, concepts: [ConceptModel], rects: [RectModel]) {
+        self.pairingsViewModel = pairingsViewModel
         self.mainContainerViewModel = mainContainerViewModel
         self.concepts = concepts
         self.rects = rects
@@ -57,8 +57,11 @@ struct CentralConceptViewContent: View {
     }
     
     func rect(index: Int) -> some View {
+        
         let _rect = rects[index]
+        
         return ZStack {
+            
             ZStack {
                 
             }

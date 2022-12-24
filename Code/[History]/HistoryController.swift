@@ -9,7 +9,7 @@ import Foundation
 
 class HistoryController {
     
-    static let maxHistoryCount = 3
+    static let maxHistoryCount = 10
     
     var historyStack = [HistoryState]()
     var historyIndex: Int = 0
@@ -23,8 +23,14 @@ class HistoryController {
     func historyAdd(state: HistoryState) -> Void {
         var newHistoryStack = [HistoryState]()
         var index = 0
-        if historyIndex == historyStack.count && (historyStack.count == Self.maxHistoryCount) {
-            index = 1
+        if lastActionWasAdd {
+            if (historyIndex == historyStack.count) && (historyStack.count == Self.maxHistoryCount) {
+                index = 1
+            }
+        } else {
+            if (historyIndex == (historyStack.count - 1)) && (historyStack.count == Self.maxHistoryCount) {
+                index = 1
+            }
         }
         while index <= historyIndex {
             if (index >= 0) && (index < historyStack.count) {

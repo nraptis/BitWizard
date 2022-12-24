@@ -8,7 +8,7 @@
 import UIKit
 
 enum AppMode {
-    case collage
+    case grid
     case centralIdea
     case pairings
 }

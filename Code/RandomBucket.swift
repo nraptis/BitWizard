@@ -9,17 +9,34 @@ import Foundation
 
 class RandomBucket {
     
-    var valuesInt: [Int]
-    var valuesFloat: [CGFloat]
-    let capacity: Int
+    private(set) var valuesInt: [Int]
+    private(set) var valuesFloat: [CGFloat]
+    private(set) var capacity: Int
     
-    var indexInt = 0
-    var indexFloat = 0
+    private(set) var indexInt = 0
+    private(set) var indexFloat = 0
     
     init(capacity: Int = 512) {
         self.capacity = capacity
         valuesInt = [Int](repeating: 0, count: capacity)
         valuesFloat = [CGFloat](repeating: 0.0, count: capacity)
+    }
+    
+    func set(randomBucket: RandomBucket) {
+        if self.capacity != randomBucket.capacity {
+            self.capacity = randomBucket.capacity
+            self.valuesInt = [Int](repeating: 0, count: randomBucket.capacity)
+            self.valuesFloat = [CGFloat](repeating: 0.0, count: randomBucket.capacity)
+        }
+        for index in 0..<randomBucket.valuesInt.count {
+            valuesInt[index] = randomBucket.valuesInt[index]
+        }
+        for index in 0..<randomBucket.valuesFloat.count {
+            valuesFloat[index] = randomBucket.valuesFloat[index]
+            valuesFloat[index] = randomBucket.valuesFloat[index]
+        }
+        self.indexInt = randomBucket.indexInt
+        self.indexFloat = randomBucket.indexFloat
     }
     
     func shuffle() {
@@ -74,6 +91,21 @@ class RandomBucket {
         }
         indexInt = state.indexInt
         indexFloat = state.indexFloat
+    }
+    
+    func log(name: String) {
+        
+        let ist = valuesInt[0] % 255
+        let ied = valuesInt[valuesInt.count - 1] % 255
+        
+        let fst = valuesFloat[0]
+        let fed = valuesFloat[valuesInt.count - 1]
+        
+        let strfst = String(format: "%.2f", fst)
+        let strfed = String(format: "%.2f", fed)
+        
+        print("Random Bucket (\(name)) Capacity: \(capacity), [i: \(indexInt), f: \(indexFloat)], {ist: \(ist) ied: \(ied)} {fst: \(strfst) fed: \(strfed)}")
+        
     }
     
 }

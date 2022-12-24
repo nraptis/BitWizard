@@ -9,8 +9,15 @@ import Foundation
 
 class MainContainerViewModel: ObservableObject {
     
-    @Published var appMode: AppMode = .centralIdea
+    @Published var appMode: AppMode = .grid
     @Published var showHideMode: ShowHideMode = .showAll
+    
+    private static let maximumGridCount = 140
+    
+    private(set) var gridWidth = 3
+    
+    private var minGridWidth = 1
+    private var maxGridWidth = ApplicationController.isIpad() ? 16 : 8
     
     private let cache = ImageCache()
     
@@ -41,8 +48,8 @@ class MainContainerViewModel: ObservableObject {
     required init(app: ApplicationController) {
         self.app = app
         switch appMode {
-        case .collage:
-            break
+        case .grid:
+            gridViewModelSpawn()
         case .centralIdea:
             centralConceptViewModelSpawn()
         case .pairings:
@@ -51,7 +58,11 @@ class MainContainerViewModel: ObservableObject {
         self.collectionWords.wake()
         self.collectionIdeas.wake()
         
-        shuffle()
+        //shuffle()
+        //imageBucket.collectionWords.shuffle()
+        imageBucket.beginFreshPull(maximumGridCount: Self.maximumGridCount,
+                                   previouslyUsedWords: [],
+                                   previouslyUsedIdeas: [])
         
         //findAverageSizes()
     }
@@ -115,15 +126,21 @@ class MainContainerViewModel: ObservableObject {
         var previouslyUsedIdeas = [ImageCollectionNode]()
         
         switch appMode {
-        case .collage:
-            break
+        case .grid:
+            if let viewModel = gridViewModel {
+                previouslyUsedWords = viewModel.usedWords
+                previouslyUsedIdeas = viewModel.usedIdeas
+            }
         case .centralIdea:
             if let viewModel = centralConceptViewModel {
                 previouslyUsedWords = viewModel.usedWords
                 previouslyUsedIdeas = viewModel.usedIdeas
             }
         case .pairings:
-            break
+            if let viewModel = pairingsViewModel {
+                previouslyUsedWords = viewModel.usedWords
+                previouslyUsedIdeas = viewModel.usedIdeas
+            }
         }
         
         if _firstShuffle {
@@ -133,8 +150,26 @@ class MainContainerViewModel: ObservableObject {
             }
         }
         
+        switch appMode {
+        case .grid:
+            if let viewModel = gridViewModel {
+                viewModel.beginFreshPull()
+            }
+        case .centralIdea:
+            if let viewModel = centralConceptViewModel {
+                viewModel.beginFreshPull()
+            }
+        case .pairings:
+            if let viewModel = pairingsViewModel {
+                viewModel.beginFreshPull()
+            }
+        }
+        
+        //beginFreshPull()
+        
+        
         //TODO: maximumGridCount
-        imageBucket.beginFreshPull(maximumGridCount: 5000000,
+        imageBucket.beginFreshPull(maximumGridCount: Self.maximumGridCount,
                                    previouslyUsedWords: previouslyUsedWords,
                                    previouslyUsedIdeas: previouslyUsedIdeas)
         
@@ -148,8 +183,14 @@ class MainContainerViewModel: ObservableObject {
     func build() {
         
         switch appMode {
-        case .collage:
-            break
+        case .grid:
+            if let gridViewModel = gridViewModel {
+                if gridViewModel.layout.layoutWidth > gridViewModel.layout.layoutHeight {
+                    gridViewModel.build(gridWidth: gridWidth + 2)
+                } else {
+                    gridViewModel.build(gridWidth: gridWidth)
+                }
+            }
         case .centralIdea:
             if let centralConceptViewModel = centralConceptViewModel {
                 if centralConceptViewModel.layout.layoutWidth > centralConceptViewModel.layout.layoutHeight {
@@ -177,32 +218,89 @@ class MainContainerViewModel: ObservableObject {
         centralConceptViewModel = nil
     }
     
+    
+    var gridViewModel: GridViewModel?
+    func gridViewModelSpawn() {
+        gridViewModel = GridViewModel(app: app, imageBucket: imageBucket, mainContainerViewModel: self)
+    }
+    
+    func gridViewModelDispose() {
+        gridViewModel = nil
+    }
+    
+    var pairingsViewModel: PairingsViewModel?
+    func pairingsViewModelSpawn() {
+        pairingsViewModel = PairingsViewModel(app: app, imageBucket: imageBucket, mainContainerViewModel: self)
+    }
+    
+    func pairingsViewModelDispose() {
+        pairingsViewModel = nil
+    }
+    
+    func change(showHideMode: ShowHideMode, fromHistory: Bool) {
+        //
+    }
+    
+    func change(appMode: AppMode, fromHistory: Bool) {
+        
+        //TODO: Save history here?
+        if !fromHistory {
+            if _firstShuffle {
+                _firstShuffle = false
+                saveHistoryState()
+            }
+        }
+        
+        switch appMode {
+            
+        case .grid:
+            gridViewModelSpawn()
+            centralConceptViewModelDispose()
+            pairingsViewModelDispose()
+        case .centralIdea:
+            gridViewModelDispose()
+            centralConceptViewModelSpawn()
+            pairingsViewModelDispose()
+        case .pairings:
+            gridViewModelDispose()
+            centralConceptViewModelDispose()
+            pairingsViewModelSpawn()
+        }
+        self.appMode = appMode
+        
+        if !fromHistory {
+            saveHistoryState()
+        }
+    }
+    
+    
     func selectLeftModeSegment() {
+        if appMode == .grid { return }
+        
         DispatchQueue.main.async {
-            self.centralConceptViewModelDispose()
-            self.appMode = .collage
+            self.change(appMode: .grid, fromHistory: false)
         }
     }
     
     func selectMiddleModeSegment() {
+        if appMode == .centralIdea { return }
+        
         DispatchQueue.main.async {
-            self.centralConceptViewModelSpawn()
-            
-            self.appMode = .centralIdea
+            self.change(appMode: .centralIdea, fromHistory: false)
         }
     }
     
     func selectRightModeSegment() {
+        if appMode == .pairings { return }
+        
         DispatchQueue.main.async {
-            self.centralConceptViewModelDispose()
-            
-            self.appMode = .pairings
+            self.change(appMode: .pairings, fromHistory: false)
         }
     }
     
     func isLeftModeSegmentSelected() -> Bool {
         switch appMode {
-        case .collage:
+        case .grid:
             return true
         default:
             return false
@@ -282,10 +380,7 @@ class MainContainerViewModel: ObservableObject {
         }
     }
     
-    private(set) var gridWidth = 3
     
-    private var minGridWidth = 1
-    private var maxGridWidth = ApplicationController.isIpad() ? 16 : 8
     
     func isLeftGridSizeStepperEnabled() -> Bool {
         gridWidth > minGridWidth
@@ -345,6 +440,28 @@ class MainContainerViewModel: ObservableObject {
     
     func applyHistoryState(_ state: HistoryState) {
         
+        if state.appMode != appMode {
+            change(appMode: state.appMode, fromHistory: true)
+        }
+        
+        if state.showHideMode != showHideMode {
+            change(showHideMode: state.showHideMode, fromHistory: true)
+        }
+        
+        gridWidth = state.gridWidth
+        
+        if let gridState = state.gridState, let gridViewModel = gridViewModel {
+            gridViewModel.loadFrom(state: gridState)
+        }
+        
+        if let centralConceptState = state.centralConceptState, let centralConceptViewModel = centralConceptViewModel {
+            centralConceptViewModel.loadFrom(state: centralConceptState)
+        }
+        
+        if let pairingsState = state.pairingsState, let pairingsViewModel = pairingsViewModel {
+            pairingsViewModel.loadFrom(state: pairingsState)
+        }
+        
         let imageBucketState = state.imageBucketState
         imageBucket.loadFrom(state: imageBucketState)
         build()
@@ -360,7 +477,29 @@ class MainContainerViewModel: ObservableObject {
     
     func saveHistoryState() {
         let imageBucketState = imageBucket.saveToState()
-        let historyState = HistoryState(imageBucketState: imageBucketState)
+        
+        var gridState: GridState?
+        var centralConceptState: CentralConceptState?
+        var pairingsState: PairingsState?
+        
+        switch appMode {
+            
+        case .grid:
+            gridState = gridViewModel?.saveToState()
+        case .centralIdea:
+            centralConceptState = centralConceptViewModel?.saveToState()
+        case .pairings:
+            pairingsState = pairingsViewModel?.saveToState()
+        }
+        
+        let historyState = HistoryState(imageBucketState: imageBucketState,
+                                        appMode: appMode,
+                                        showHideMode: showHideMode,
+                                        gridWidth: gridWidth,
+                                        gridState: gridState,
+                                        centralConceptState: centralConceptState,
+                                        pairingsState: pairingsState)
+        
         historyController.historyAdd(state: historyState)
     }
     

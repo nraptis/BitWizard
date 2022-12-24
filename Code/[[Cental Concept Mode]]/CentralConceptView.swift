@@ -25,26 +25,6 @@ struct CentralConceptView: View {
         .frame(width: width, height: height)
         .background(Color.black)
     }
-    
-    /*
-    func content() -> some View {
-        var selected = [Bool](repeating: false, count: centralConceptViewModel.layout.concepts.count)
-        for index in 0..<selected.count {
-            let concept = centralConceptViewModel.layout.concepts[index]
-            let node = concept.node
-            let _selected = mainContainerViewModel.imageBucket.isSelected(node: node)
-            selected[index] = _selected
-        }
-        print("selected = \(selected)")
-        
-        return CentralConceptViewContent(centralConceptViewModel: centralConceptViewModel,
-                                         mainContainerViewModel: mainContainerViewModel,
-                                         concepts: centralConceptViewModel.layout.concepts,
-                                         selected: selected)
-        
-    }
-    */
-    
 }
 
 struct CentralConceptView_Previews: PreviewProvider {

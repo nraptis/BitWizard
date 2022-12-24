@@ -81,6 +81,7 @@ class ImageCollection {
             dict[fileName] = node
             index += 1
         }
+        shuffle()
     }
     
     func shuffle() {

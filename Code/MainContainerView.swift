@@ -34,14 +34,24 @@ struct MainContainerView: View {
                         configuration: toolMenuConfiguration)
             ZStack {
                 switch mainContainerViewModel.appMode {
-                case .collage:
-                    EmptyView()
+                case .grid:
+                    if let viewModel = mainContainerViewModel.gridViewModel {
+                        gridView(gridViewModel: viewModel,
+                                 geometry: geometry,
+                                 mainContentHeight: mainContentHeight)
+                    }
                 case .centralIdea:
                     if let viewModel = mainContainerViewModel.centralConceptViewModel {
-                        centralConceptView(centralConceptViewModel: viewModel, geometry: geometry, mainContentHeight: mainContentHeight)
+                        centralConceptView(centralConceptViewModel: viewModel,
+                                           geometry: geometry,
+                                           mainContentHeight: mainContentHeight)
                     }
                 case .pairings:
-                    EmptyView()
+                    if let viewModel = mainContainerViewModel.pairingsViewModel {
+                        pairingsView(pairingsViewModel: viewModel,
+                                     geometry: geometry,
+                                     mainContentHeight: mainContentHeight)
+                    }
                 }
             }
             .frame(width: geometry.size.width, height: mainContentHeight)
@@ -53,17 +63,52 @@ struct MainContainerView: View {
         }
     }
     
-    func centralConceptView(centralConceptViewModel: CentralConceptViewModel, geometry: GeometryProxy, mainContentHeight: CGFloat) -> some View {
-        
+    func gridView(gridViewModel: GridViewModel, geometry: GeometryProxy, mainContentHeight: CGFloat) -> some View {
         if geometry.size.width > geometry.size.height {
-            centralConceptViewModel.register(layoutWidth: geometry.size.width, layoutHeight: mainContentHeight, gridWidth: mainContainerViewModel.gridWidth + 2)
+            gridViewModel.register(layoutWidth: geometry.size.width,
+                                   layoutHeight: mainContentHeight,
+                                   gridWidth: mainContainerViewModel.gridWidth + 2)
         } else {
-            centralConceptViewModel.register(layoutWidth: geometry.size.width, layoutHeight: mainContentHeight, gridWidth: mainContainerViewModel.gridWidth)
+            gridViewModel.register(layoutWidth: geometry.size.width,
+                                   layoutHeight: mainContentHeight,
+                                   gridWidth: mainContainerViewModel.gridWidth)
+        }
+        return GridView(gridViewModel: gridViewModel,
+                        mainContainerViewModel: mainContainerViewModel,
+                        width: geometry.size.width,
+                        height: mainContentHeight)
+    }
+    
+    func centralConceptView(centralConceptViewModel: CentralConceptViewModel, geometry: GeometryProxy, mainContentHeight: CGFloat) -> some View {
+        if geometry.size.width > geometry.size.height {
+            centralConceptViewModel.register(layoutWidth: geometry.size.width,
+                                             layoutHeight: mainContentHeight,
+                                             gridWidth: mainContainerViewModel.gridWidth + 2)
+        } else {
+            centralConceptViewModel.register(layoutWidth: geometry.size.width,
+                                             layoutHeight: mainContentHeight,
+                                             gridWidth: mainContainerViewModel.gridWidth)
         }
         return CentralConceptView(centralConceptViewModel: centralConceptViewModel,
                                   mainContainerViewModel: mainContainerViewModel,
                                   width: geometry.size.width,
                                   height: mainContentHeight)
+    }
+    
+    func pairingsView(pairingsViewModel: PairingsViewModel, geometry: GeometryProxy, mainContentHeight: CGFloat) -> some View {
+        if geometry.size.width > geometry.size.height {
+            pairingsViewModel.register(layoutWidth: geometry.size.width,
+                                       layoutHeight: mainContentHeight,
+                                       gridWidth: mainContainerViewModel.gridWidth + 2)
+        } else {
+            pairingsViewModel.register(layoutWidth: geometry.size.width,
+                                       layoutHeight: mainContentHeight,
+                                       gridWidth: mainContainerViewModel.gridWidth)
+        }
+        return PairingsView(pairingsViewModel: pairingsViewModel,
+                            mainContainerViewModel: mainContainerViewModel,
+                            width: geometry.size.width,
+                            height: mainContentHeight)
     }
     
     func topMenuHeight(configuration: ToolMenuConfiguration) -> CGFloat {

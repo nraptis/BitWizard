@@ -1,21 +1,21 @@
 //
-//  CentralConceptViewModel.swift
+//  PairingsViewModel.swift
 //  BitWizard
 //
-//  Created by Nicky Taylor on 12/3/22.
+//  Created by Nicky Taylor on 12/24/22.
 //
 
 import Foundation
 
-class CentralConceptViewModel: ObservableObject {
+class PairingsViewModel: ObservableObject {
     
-    static func preview() -> CentralConceptViewModel {
+    static func preview() -> PairingsViewModel {
         let mcvm = MainContainerViewModel.preview()
-        return CentralConceptViewModel(app: ApplicationController.preview(), imageBucket: mcvm.imageBucket, mainContainerViewModel: mcvm)
+        return PairingsViewModel(app: ApplicationController.preview(), imageBucket: mcvm.imageBucket, mainContainerViewModel: mcvm)
     }
     
     deinit {
-        print("CentralConceptViewModel.destroy()")
+        print("PairingsViewModel.destroy()")
     }
     
     var usedWords = [ImageCollectionNode]()
@@ -24,10 +24,9 @@ class CentralConceptViewModel: ObservableObject {
     let app: ApplicationController
     let imageBucket: ImageBucket
     let mainContainerViewModel: MainContainerViewModel
-    lazy var layout: CentralConceptLayout = {
-        CentralConceptLayout(imageBucket: mainContainerViewModel.imageBucket)
+    lazy var layout: PairingsLayout = {
+        PairingsLayout(imageBucket: mainContainerViewModel.imageBucket)
     }()
-    
     
     required init(app: ApplicationController, imageBucket: ImageBucket, mainContainerViewModel: MainContainerViewModel) {
         self.app = app
@@ -78,11 +77,11 @@ class CentralConceptViewModel: ObservableObject {
         
     }
     
-    func saveToState() -> CentralConceptState {
-        return CentralConceptState(randomBucket: layout.randomBucketStored)
+    func saveToState() -> PairingsState {
+        return PairingsState(randomBucket: layout.randomBucketStored)
     }
     
-    func loadFrom(state: CentralConceptState) {
+    func loadFrom(state: PairingsState) {
         layout.randomBucketStored.loadFrom(state: state.randomBucketState)
     }
     

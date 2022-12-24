@@ -134,13 +134,10 @@ class ImageBucket {
         }
         
         let numberOfWordsToPull = maximumGridCount - (new_pulledWords.count + _selectedWords.count)
-        print("numberOfWordsToPull = \(numberOfWordsToPull)")
         let fetchedWords = collectionWords.fetch(count: numberOfWordsToPull, ignoreBag: _ignoreBagWords)
         new_pulledWords.append(contentsOf: fetchedWords)
         
         let numberOfIdeasToPull = maximumGridCount - (new_pulledIdeas.count + _selectedIdeas.count)
-        print("numberOfIdeasToPull = \(numberOfIdeasToPull)")
-        
         let fetchedIdeas = collectionIdeas.fetch(count: numberOfIdeasToPull, ignoreBag: _ignoreBagIdeas)
         new_pulledIdeas.append(contentsOf: fetchedIdeas)
         
@@ -173,8 +170,8 @@ class ImageBucket {
         for node in _selectedIdeas { ideas.append(node) }
         for node in _pulledIdeas { ideas.append(node) }
         
-        print("words count: \(words.count), sel: \(_selectedWords.count), pul: \(_pulledWords.count)")
-        print("ideas count: \(ideas.count), sel: \(_selectedIdeas.count), pul: \(_pulledIdeas.count)")
+        //print("words count: \(words.count), sel: \(_selectedWords.count), pul: \(_pulledWords.count)")
+        //print("ideas count: \(ideas.count), sel: \(_selectedIdeas.count), pul: \(_pulledIdeas.count)")
         
         //printArray(name: "words", arr: words)
         //printArray(name: "ideas", arr: ideas)
@@ -221,6 +218,11 @@ class ImageBucket {
     func isSelected(node: ImageCollectionNode) -> Bool {
         if selectedBag.contains(node) { return true }
         if recentlySelectedBag.contains(node) { return true }
+        return false
+    }
+    
+    func isSelectedNotRecently(node: ImageCollectionNode) -> Bool {
+        if selectedBag.contains(node) { return true }
         return false
     }
     
