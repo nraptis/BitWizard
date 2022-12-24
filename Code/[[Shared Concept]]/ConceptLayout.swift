@@ -396,8 +396,7 @@ class ConceptLayout {
     }
     
     func dequeueAny() -> ImageCollectionNode? {
-        //Todo: Use bucket
-        if Bool.random() {
+        if randomBucket.nextBool() {
             if let result = dequeueWord() {
                 return result
             }
@@ -495,13 +494,6 @@ class ConceptLayout {
     }
     
     func addConceptsToEachStrip() {
-        
-        // First compute the "filled" height for each strip...
-        // This will be 2 x average height...
-        
-        
-        
-        // First keep filling the strips until cannot.
         var reloop = true
         while reloop {
             reloop = false
@@ -548,8 +540,17 @@ class ConceptLayout {
         }
         
         
-        for strip in strips {
-            capOff(strip: strip, stripLayoutNodeType: stripLayoutNodeType)
+        var indices = [Int]()
+        for index in 0..<strips.count {
+            indices.append(index)
+        }
+        for index in 0..<strips.count {
+            let rand = randomBucket.nextInt(strips.count)
+            strips.swapAt(index, rand)
+        }
+        
+        for index in indices {
+            capOff(strip: strips[index], stripLayoutNodeType: stripLayoutNodeType)
         }
         
         for strip in strips {
@@ -560,39 +561,11 @@ class ConceptLayout {
                 incrementBaseID()
             }
         }
-        
-        //NodeWidthMapping
-        
     }
     
 }
 
-
 extension ConceptLayout {
-    
-    /*
-    private var _usedNodes = Set<ImageCollectionNode>()
-    
-    private var _unselectedWords = [ImageCollectionNode]()
-    private var _unselectedIdeas = [ImageCollectionNode]()
-    private var _selectedWords = [ImageCollectionNode]()
-    private var _selectedIdeas = [ImageCollectionNode]()
-    
-    private var _unselectedWordsIndex = 0
-    private var _unselectedWordsCount = 0
-    private var _usedUnselectedWordsCount = 0
-    private var _unselectedIdeasIndex = 0
-    private var _unselectedIdeasCount = 0
-    private var _usedUnselectedIdeasCount = 0
-    private var _selectedWordsIndex = 0
-    private var _selectedWordsCount = 0
-    private var _usedSelectedWordsCount = 0
-    private var _selectedIdeasIndex = 0
-    private var _selectedIdeasCount = 0
-    private var _usedSelectedIdeasCount = 0
-    */
-    
-    
     private func addBestPossibleConceptConsideringOnlyUnselectedWordNodes(strip: ConceptStrip) -> Bool {
         
         let count = _unselectedWords.count
@@ -927,42 +900,7 @@ extension ConceptLayout {
             }
         }
     }
-    
 }
-
-//This is the idea:
-//For start index, find upper / lower bound. (this 2 sum)
-//For s1, s2, upper/lower bound (this 3 sum)
-
-/*
-func lowerBound(element: Element) -> Int {
-    var start = 0
-    var end = count
-    while start != end {
-        let mid = (start + end) >> 1
-        if element > values[mid] {
-            start = mid + 1
-        } else {
-            end = mid
-        }
-    }
-    return start
-}
-
-func upperBound(element: Element) -> Int {
-    var start = 0
-    var end = count
-    while start != end {
-        let mid = (start + end) >> 1
-        if element >= values[mid] {
-            start = mid + 1
-        } else {
-            end = mid
-        }
-    }
-    return start
-}
-*/
 
 extension ConceptLayout {
     
@@ -1041,7 +979,6 @@ extension ConceptLayout {
         }
         return start
     }
-    
     
     func oneSumBucketLowerBound(height: Int) -> Int {
         var start = 0
@@ -1142,6 +1079,7 @@ extension ConceptLayout {
             node.tempHeight = Int(node.height * ratio + 0.5)
         }
         
+        // Collect all of the nodes with the same width into buckets.
         for node in capoffNodes {
             if let bucket = capoffHeightBucketDict[node.tempHeight] {
                 if node.tempSelected {
@@ -1161,10 +1099,12 @@ extension ConceptLayout {
             }
         }
         
+        // Sort the buckets
         capoffHeightBucketList.sort {
             $0.height < $1.height
         }
         
+        // This is how much more space we need to fill.
         let target = Int((strip.height - strip.conceptsHeight) + 0.5)
         
         var index1: Int = 0
@@ -1172,6 +1112,7 @@ extension ConceptLayout {
         var index2: Int = 0
         var cap2: Int = 0
         
+        //1.) we get ALL of the two-sums, which are less than target...
         index1 = 0
         cap1 = (capoffHeightBucketList.count - 1)
         cap2 = capoffHeightBucketList.count
@@ -1198,10 +1139,13 @@ extension ConceptLayout {
             index1 += 1
         }
         
+        //Sort the two-sums...
         capoffTwoSumBucketList.sort {
             $0.height < $1.height
         }
         
+        //2.) we get ALL of the three-sums, which are less than target...
+        //    this is done using the two-sums...
         index1 = 0
         cap1 = (capoffHeightBucketList.count - 2)
         cap2 = capoffTwoSumBucketList.count
@@ -1226,6 +1170,7 @@ extension ConceptLayout {
             index1 += 1
         }
         
+        // Sort the three-sums...
         capoffThreeSumBucketList.sort {
             $0.height < $1.height
         }
@@ -1235,6 +1180,10 @@ extension ConceptLayout {
         capoffMatches3.removeAll(keepingCapacity: true)
         capoffMatches4.removeAll(keepingCapacity: true)
         
+        //3.) We use the three-sums to get all the combinations of 4.
+        //    Since the three-sums are sorted, we can use the
+        //    upper bound and lower bound, this range will all match
+        //    our approximate size.
         index1 = 0
         cap1 = (capoffHeightBucketList.count - 3)
         while index1 < cap1 {
@@ -1268,6 +1217,10 @@ extension ConceptLayout {
             index1 += 1
         }
         
+        //4.) We use the three-sums to get all the combinations of 3.
+        //    Since the three-sums are sorted, we can use the
+        //    upper bound and lower bound, this range will all match
+        //    our approximate size.
         let threeSumLowerBound = threeSumBucketLowerBound(height: target - Self.capoffTolerance)
         let threeSumUpperBound = threeSumBucketUpperBound(height: target)
         if threeSumUpperBound > threeSumLowerBound {
@@ -1293,6 +1246,10 @@ extension ConceptLayout {
             }
         }
         
+        //5.) We use the two-sums to get all the combinations of 2.
+        //    Since the two-sums are sorted, we can use the
+        //    upper bound and lower bound, this range will all match
+        //    our approximate size.
         let twoSumLowerBound = twoSumBucketLowerBound(height: target - Self.capoffTolerance)
         let twoSumUpperBound = twoSumBucketUpperBound(height: target)
         if twoSumUpperBound > twoSumLowerBound {
@@ -1313,6 +1270,10 @@ extension ConceptLayout {
             }
         }
         
+        //6.) We use the one-sums to get all the combinations of 1.
+        //    Since the one-sums are sorted, we can use the
+        //    upper bound and lower bound, this range will all match
+        //    our approximate size.
         let oneSumLowerBound = oneSumBucketLowerBound(height: target - Self.capoffTolerance)
         let oneSumUpperBound = oneSumBucketUpperBound(height: target)
         if oneSumUpperBound > oneSumLowerBound {
@@ -1327,8 +1288,14 @@ extension ConceptLayout {
             }
         }
         
+        //7.) Randomize all of the buckets, this will produce
+        //    a better looking grid...
         capOffStir()
         
+        //8.) Factor in the "selected" vs "unselected" nodes
+        //    and also ignore the duplicates. This is theoreticaly
+        //    very slow, but with the stop-conditions, in practical
+        //    use, it ends up being lightning quick.
         capOffProceedWithMatches(strip: strip, stripLayoutNodeType: stripLayoutNodeType)
     }
     
@@ -1529,7 +1496,6 @@ extension ConceptLayout {
         }
         
         if (selectedCountAvailable - selectedCountUsed) < requiredSelectedCount {
-            //print("skip try 1, selectedCountAvailable = \(selectedCountAvailable), selectedCountUsed = \(selectedCountUsed), requiredSelectedCount = \(requiredSelectedCount)")
             return false
         }
         
@@ -1564,7 +1530,6 @@ extension ConceptLayout {
         }
         
         if (selectedCountAvailable - selectedCountUsed) < requiredSelectedCount {
-            //print("skip try 2, selectedCountAvailable = \(selectedCountAvailable), selectedCountUsed = \(selectedCountUsed), requiredSelectedCount = \(requiredSelectedCount)")
             return false
         }
         
@@ -1604,7 +1569,6 @@ extension ConceptLayout {
         }
         
         if (selectedCountAvailable - selectedCountUsed) < requiredSelectedCount {
-            //print("skip try 3, selectedCountAvailable = \(selectedCountAvailable), selectedCountUsed = \(selectedCountUsed), requiredSelectedCount = \(requiredSelectedCount)")
             return false
         }
         
@@ -1631,7 +1595,6 @@ extension ConceptLayout {
     
     func capOffTryFour(strip: ConceptStrip, stripLayoutNodeType: LayoutNodeType, requiredSelectedCount: Int) -> Bool {
         
-        
         // Can we just skip this?
         var selectedCountAvailable = 0
         var selectedCountUsed = 0
@@ -1648,7 +1611,6 @@ extension ConceptLayout {
         }
         
         if (selectedCountAvailable - selectedCountUsed) < requiredSelectedCount {
-            //print("skip try 4, selectedCountAvailable = \(selectedCountAvailable), selectedCountUsed = \(selectedCountUsed), requiredSelectedCount = \(requiredSelectedCount)")
             return false
         }
          
@@ -1674,267 +1636,5 @@ extension ConceptLayout {
         }
         return false
     }
-    
-    
-    //var bestSelectedCount = 0
-    
-    
-    
-    /*
-    func capOffFloodOneSum(target: Int) {
-        if capoffNodes.count <= 0 {
-            return
-        }
-        for index1 in 0..<capoffNodes.count {
-            let node = capoffNodes[index1]
-            if (node.tempHeight <= target) && ((target - node.tempHeight) <= Self.capoffTolerance) {
-                capoffMatches1.append(CapOffMatch1(index1: index1))
-            }
-        }
-    }
-    
-    func capOffFloodTwoSum(target: Int) {
-        if capoffNodes.count <= 1 {
-            return
-        }
-        
-        var index1 = 0
-        var index2 = capoffNodes.count - 1
-        
-        while index1 < index2 {
-            let sum =   capoffNodes[index1].tempHeight +
-                        capoffNodes[index2].tempHeight
-            if (sum <= target) && ((target - sum) <= Self.capoffTolerance) {
-                capoffMatches2.append(CapOffMatch2(index1: index1, index2: index2))
-            }
-            if sum < target {
-                index1 += 1
-            } else {
-                index2 -= 1
-            }
-        }
-    }
-    
-    func capOffFloodThreeSum(target: Int) {
-        if capoffNodes.count <= 2 {
-            return
-        }
-        
-        for index1 in 0..<(capoffNodes.count - 2) {
-            var index2 = index1 + 1
-            var index3 = capoffNodes.count - 1
-            while index2 < index3 {
-                let sum =   capoffNodes[index1].tempHeight +
-                            capoffNodes[index2].tempHeight +
-                            capoffNodes[index3].tempHeight
-                if (sum <= target) && ((target - sum) <= Self.capoffTolerance) {
-                    capoffMatches3.append(CapOffMatch3(index1: index1, index2: index2, index3: index3))
-                }
-                if sum < target {
-                    index2 += 1
-                } else {
-                    index3 -= 1
-                }
-            }
-        }
-    }
-    
-    func capOffFloodFourSum(target: Int) {
-        if capoffNodes.count <= 3 {
-            return
-        }
-        
-        var loops = 0
-        for index1 in 0..<(capoffNodes.count - 3) {
-            for index2 in (index1 + 1)..<(capoffNodes.count - 2) {
-                var index3 = index2 + 1
-                var index4 = capoffNodes.count - 1
-                while index3 < index4 {
-                    loops += 1
-                    let sum =   capoffNodes[index1].tempHeight +
-                                capoffNodes[index2].tempHeight +
-                                capoffNodes[index3].tempHeight +
-                                capoffNodes[index4].tempHeight
-                    if (sum <= target) && ((target - sum) <= Self.capoffTolerance) {
-                        capoffMatches4.append(CapOffMatch4(index1: index1, index2: index2, index3: index3, index4: index4))
-                    }
-                    if sum < target {
-                        index3 += 1
-                    } else {
-                        index4 -= 1
-                    }
-                }
-            }
-        }
-        print("loops = \(loops)")
-    }
-    
-    func logSum(cap1: CapOffMatch1, strip: ConceptStrip) {
-        let nodes = [capoffNodes[cap1.index1]]
-        logSum(result: nodes, strip: strip)
-    }
-    
-    func logSum(cap2: CapOffMatch2, strip: ConceptStrip) {
-        let nodes = [capoffNodes[cap2.index1], capoffNodes[cap2.index2]]
-        logSum(result: nodes, strip: strip)
-    }
-    
-    func logSum(cap3: CapOffMatch3, strip: ConceptStrip) {
-        let nodes = [capoffNodes[cap3.index1], capoffNodes[cap3.index2], capoffNodes[cap3.index3]]
-        logSum(result: nodes, strip: strip)
-    }
-    
-    func logSum(cap4: CapOffMatch4, strip: ConceptStrip) {
-        let nodes = [capoffNodes[cap4.index1], capoffNodes[cap4.index2], capoffNodes[cap4.index3], capoffNodes[cap4.index4]]
-        logSum(result: nodes, strip: strip)
-    }
-    
-    func logSum(result: [ImageCollectionNode], strip: ConceptStrip) {
-        
-        let remainingHeight = strip.height - strip.conceptsHeight
-        let resultHeight = result.reduce(0) { val, node in
-            val + node.tempHeight
-        }
-        print("____________")
-        print("best match for \(strip.width) x \(strip.height), remaining: \(remainingHeight), \(result.count) nodes...")
-        for (index, node) in result.enumerated() {
-            print("node[\(index)][\(node.fileName)] height: \(node.tempHeight), total: \(resultHeight)")
-        }
-        print("____________")
-    }
-    */
-    
-    /*
-    func capOffFindClosestMatch(sorted: [ImageCollectionNode], strip: ConceptStrip) -> [ImageCollectionNode] {
-        
-        let remainingHeight = strip.height - strip.conceptsHeight
-        
-        let bestOne = capOffFindClosestMatchOneSum(sorted: sorted, target: remainingHeight)
-        let bestTwo = capOffFindClosestMatchTwoSum(sorted: sorted, target: remainingHeight)
-        let bestThree = capOffFindClosestMatchThreeSum(sorted: sorted, target: remainingHeight)
-        
-        let sum1 = bestOne.reduce(0) { val, node in
-            val + node.tempHeight
-        }
-        let sum2 = bestTwo.reduce(0) { val, node in
-            val + node.tempHeight
-        }
-        let sum3 = bestThree.reduce(0) { val, node in
-            val + node.tempHeight
-        }
-        
-        let diff1 = remainingHeight - sum1
-        let diff2 = remainingHeight - sum2
-        let diff3 = remainingHeight - sum3
-        
-        if diff1 < diff2 {
-            if diff1 < diff3 {
-                return bestOne
-            } else {
-                return bestThree
-            }
-        } else {
-            if diff2 < diff3 {
-                return bestTwo
-            } else {
-                return bestThree
-            }
-        }
-    }
-    
-    func capOffFindClosestMatchOneSum(sorted: [ImageCollectionNode], target: CGFloat) -> [ImageCollectionNode] {
-        var result = [ImageCollectionNode]()
-        if sorted.count <= 0 {
-            return result
-        }
-        
-        var bestDistance = CGFloat(1_000_000_000.0)
-        for index in 0..<sorted.count {
-            let node = sorted[index]
-            if node.tempHeight <= target {
-                let diff = target - node.tempHeight
-                if diff < bestDistance {
-                    bestDistance = diff
-                    result = [node]
-                }
-            }
-        }
-        return result
-    }
-    
-    func capOffFindClosestMatchTwoSum(sorted: [ImageCollectionNode], target: CGFloat) -> [ImageCollectionNode] {
-        var result = [ImageCollectionNode]()
-        if sorted.count <= 1 {
-            return result
-        }
-        
-        var bestDistance = CGFloat(1_000_000_000.0)
-        var lo = 0
-        var hi = sorted.count - 1
-        var chosenIndex1 = -1
-        var chosenIndex2 = -1
-        
-        while lo < hi {
-            let sum = sorted[lo].tempHeight + sorted[hi].tempHeight
-            if sum <= target {
-                let diff = target - sum
-                if diff < bestDistance {
-                    bestDistance = diff
-                    chosenIndex1 = lo
-                    chosenIndex2 = hi
-                }
-            }
-            
-            if sum < target {
-                lo += 1
-            } else {
-                hi -= 1
-            }
-        }
-        if (chosenIndex1 != -1) && (chosenIndex2 != -1) {
-            result = [sorted[chosenIndex1], sorted[chosenIndex2]]
-        }
-        return result
-    }
-    
-    func capOffFindClosestMatchThreeSum(sorted: [ImageCollectionNode], target: CGFloat) -> [ImageCollectionNode] {
-        var result = [ImageCollectionNode]()
-        if sorted.count <= 2 {
-            return result
-        }
-        
-        var chosenIndex1 = -1
-        var chosenIndex2 = -1
-        var chosenIndex3 = -1
-        
-        var bestDistance = CGFloat(1_000_000_000.0)
-        for outer in 0..<(sorted.count - 2) {
-            var lo = outer + 1
-            var hi = sorted.count - 1
-            while lo < hi {
-                let sum = sorted[outer].tempHeight + sorted[lo].tempHeight + sorted[hi].tempHeight
-                if sum <= target {
-                    let diff = target - sum
-                    if diff < bestDistance {
-                        bestDistance = diff
-                        chosenIndex1 = outer
-                        chosenIndex2 = lo
-                        chosenIndex3 = hi
-                    }
-                }
-                if sum < target {
-                    lo += 1
-                } else {
-                    hi -= 1
-                }
-            }
-        }
-        if (chosenIndex1 != -1) && (chosenIndex2 != -1) && (chosenIndex3 != -1) {
-            result = [sorted[chosenIndex1], sorted[chosenIndex2], sorted[chosenIndex3]]
-        }
-        return result
-    }
-    */
-    
 }
 
