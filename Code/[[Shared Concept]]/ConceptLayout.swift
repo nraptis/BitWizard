@@ -14,6 +14,13 @@ enum LayoutNodeType {
     case word
 }
 
+enum CapOffType {
+    case one
+    case two
+    case three
+    case four
+}
+
 class ConceptLayoutBuildResponse {
     var usedWords = [ImageCollectionNode]()
     var usedIdeas = [ImageCollectionNode]()
@@ -60,17 +67,20 @@ struct NodeWidthConceptWidth: Hashable {
 
 struct CapOffMatch1 {
     let bucket1: CapOffHeightBucket
+    let bestSelectedCount: Int
 }
 
 struct CapOffMatch2 {
     let bucket1: CapOffHeightBucket
     let bucket2: CapOffHeightBucket
+    let bestSelectedCount: Int
 }
 
 struct CapOffMatch3 {
     let bucket1: CapOffHeightBucket
     let bucket2: CapOffHeightBucket
     let bucket3: CapOffHeightBucket
+    let bestSelectedCount: Int
 }
 
 struct CapOffMatch4 {
@@ -78,6 +88,29 @@ struct CapOffMatch4 {
     let bucket2: CapOffHeightBucket
     let bucket3: CapOffHeightBucket
     let bucket4: CapOffHeightBucket
+    let bestSelectedCount: Int
+}
+
+struct CapOffNode1 {
+    let node1: ImageCollectionNode
+}
+
+struct CapOffNode2 {
+    let node1: ImageCollectionNode
+    let node2: ImageCollectionNode
+}
+
+struct CapOffNode3 {
+    let node1: ImageCollectionNode
+    let node2: ImageCollectionNode
+    let node3: ImageCollectionNode
+}
+
+struct CapOffNode4 {
+    let node1: ImageCollectionNode
+    let node2: ImageCollectionNode
+    let node3: ImageCollectionNode
+    let node4: ImageCollectionNode
 }
 
 class CapOffHeightBucket {
@@ -123,8 +156,6 @@ class CapOffThreeSumBucket {
     }
 }
 
-
-
 class ConceptLayout {
     
     var layoutWidth: CGFloat = 256.0
@@ -146,14 +177,11 @@ class ConceptLayout {
     fileprivate var capoffHeightBucketList = [CapOffHeightBucket]()
     fileprivate var capoffHeightBucketDict = [Int: CapOffHeightBucket]()
     
-    
     fileprivate var capoffTwoSumBucketList = [CapOffTwoSumBucket]()
     fileprivate var capoffTwoSumBucketDict = [Int: CapOffTwoSumBucket]()
     
-    
     fileprivate var capoffThreeSumBucketList = [CapOffThreeSumBucket]()
     fileprivate var capoffThreeSumBucketDict = [Int: CapOffThreeSumBucket]()
-    
     
     let imageBucket: ImageBucket
     let randomBucket = RandomBucket()
@@ -352,6 +380,7 @@ class ConceptLayout {
         _selectedIdeas.removeAll(keepingCapacity: true)
         _unselectedIdeas.removeAll(keepingCapacity: true)
         for node in imageBucket.ideas {
+            node.tempUsed = false
             if imageBucket.isSelected(node: node) {
                 _selectedIdeas.append(node)
             } else {
@@ -520,7 +549,7 @@ class ConceptLayout {
         
         
         for strip in strips {
-            capOff(strip: strip)
+            capOff(strip: strip, stripLayoutNodeType: stripLayoutNodeType)
         }
         
         for strip in strips {
@@ -1042,7 +1071,37 @@ extension ConceptLayout {
         return start
     }
     
-    func capOff(strip: ConceptStrip) {
+    func bestSelectedCount(bucket1: CapOffHeightBucket) -> Int {
+        var result = 0
+        if bucket1.nodesSelected.count > 0 { result += 1 }
+        return result
+    }
+    
+    func bestSelectedCount(bucket1: CapOffHeightBucket, bucket2: CapOffHeightBucket) -> Int {
+        var result = 0
+        if bucket1.nodesSelected.count > 0 { result += 1 }
+        if bucket2.nodesSelected.count > 0 { result += 1 }
+        return result
+    }
+    
+    func bestSelectedCount(bucket1: CapOffHeightBucket, bucket2: CapOffHeightBucket, bucket3: CapOffHeightBucket) -> Int {
+        var result = 0
+        if bucket1.nodesSelected.count > 0 { result += 1 }
+        if bucket2.nodesSelected.count > 0 { result += 1 }
+        if bucket3.nodesSelected.count > 0 { result += 1 }
+        return result
+    }
+    
+    func bestSelectedCount(bucket1: CapOffHeightBucket, bucket2: CapOffHeightBucket, bucket3: CapOffHeightBucket, bucket4: CapOffHeightBucket) -> Int {
+        var result = 0
+        if bucket1.nodesSelected.count > 0 { result += 1 }
+        if bucket2.nodesSelected.count > 0 { result += 1 }
+        if bucket3.nodesSelected.count > 0 { result += 1 }
+        if bucket4.nodesSelected.count > 0 { result += 1 }
+        return result
+    }
+    
+    func capOff(strip: ConceptStrip, stripLayoutNodeType: LayoutNodeType) {
         
         capoffHeightBucketList.removeAll(keepingCapacity: true)
         capoffHeightBucketDict.removeAll(keepingCapacity: true)
@@ -1054,21 +1113,27 @@ extension ConceptLayout {
         capoffThreeSumBucketDict.removeAll(keepingCapacity: true)
         
         capoffNodes.removeAll(keepingCapacity: true)
-        for node in _selectedWords where !node.tempUsed {
-            node.tempSelected = true
-            capoffNodes.append(node)
+        
+        if stripLayoutNodeType == .any || stripLayoutNodeType == .word {
+            for node in _selectedWords where !node.tempUsed {
+                node.tempSelected = true
+                capoffNodes.append(node)
+            }
+            for node in _unselectedWords where !node.tempUsed {
+                node.tempSelected = false
+                capoffNodes.append(node)
+            }
         }
-        for node in _selectedIdeas where !node.tempUsed {
-            node.tempSelected = true
-            capoffNodes.append(node)
-        }
-        for node in _unselectedWords where !node.tempUsed {
-            node.tempSelected = false
-            capoffNodes.append(node)
-        }
-        for node in _unselectedIdeas where !node.tempUsed {
-            node.tempSelected = false
-            capoffNodes.append(node)
+        
+        if stripLayoutNodeType == .any || stripLayoutNodeType == .word {
+            for node in _selectedIdeas where !node.tempUsed {
+                node.tempSelected = true
+                capoffNodes.append(node)
+            }
+            for node in _unselectedIdeas where !node.tempUsed {
+                node.tempSelected = false
+                capoffNodes.append(node)
+            }
         }
         
         for node in capoffNodes {
@@ -1076,9 +1141,6 @@ extension ConceptLayout {
             node.tempWidth = Int(strip.width + 0.5)
             node.tempHeight = Int(node.height * ratio + 0.5)
         }
-        
-        
-        //capoffHeightBuckets
         
         for node in capoffNodes {
             if let bucket = capoffHeightBucketDict[node.tempHeight] {
@@ -1104,8 +1166,6 @@ extension ConceptLayout {
         }
         
         let target = Int((strip.height - strip.conceptsHeight) + 0.5)
-        
-        //Build all the two-sum bucket pairs...
         
         var index1: Int = 0
         var cap1: Int = 0
@@ -1190,18 +1250,23 @@ extension ConceptLayout {
                         for twoSumPair in threeSumPair.twoSumBucket.pairs {
                             let bucket3 = twoSumPair.heightBucket1
                             let bucket4 = twoSumPair.heightBucket2
-                            let match = CapOffMatch4(bucket1: bucket1, bucket2: bucket2, bucket3: bucket3, bucket4: bucket4)
+                            let bestSelectedCount = bestSelectedCount(bucket1: bucket1,
+                                                                      bucket2: bucket2,
+                                                                      bucket3: bucket3,
+                                                                      bucket4: bucket4)
+                            let match = CapOffMatch4(bucket1: bucket1,
+                                                     bucket2: bucket2,
+                                                     bucket3: bucket3,
+                                                     bucket4: bucket4,
+                                                     bestSelectedCount: bestSelectedCount)
                             capoffMatches4.append(match)
                         }
                     }
                     index2 += 1
                 }
             }
-            
             index1 += 1
         }
-        
-        
         
         let threeSumLowerBound = threeSumBucketLowerBound(height: target - Self.capoffTolerance)
         let threeSumUpperBound = threeSumBucketUpperBound(height: target)
@@ -1214,15 +1279,19 @@ extension ConceptLayout {
                     for twoSumPair in threeSumPair.twoSumBucket.pairs {
                         let bucket2 = twoSumPair.heightBucket1
                         let bucket3 = twoSumPair.heightBucket2
-                        let match = CapOffMatch3(bucket1: bucket1, bucket2: bucket2, bucket3: bucket3)
+                        let bestSelectedCount = bestSelectedCount(bucket1: bucket1,
+                                                                  bucket2: bucket2,
+                                                                  bucket3: bucket3)
+                        let match = CapOffMatch3(bucket1: bucket1,
+                                                 bucket2: bucket2,
+                                                 bucket3: bucket3,
+                                                 bestSelectedCount: bestSelectedCount)
                         capoffMatches3.append(match)
                     }
                 }
                 index1 += 1
             }
         }
-       
-        
         
         let twoSumLowerBound = twoSumBucketLowerBound(height: target - Self.capoffTolerance)
         let twoSumUpperBound = twoSumBucketUpperBound(height: target)
@@ -1233,13 +1302,16 @@ extension ConceptLayout {
                 for twoSumPair in twoSumBucket.pairs {
                     let bucket1 = twoSumPair.heightBucket1
                     let bucket2 = twoSumPair.heightBucket2
-                    let match = CapOffMatch2(bucket1: bucket1, bucket2: bucket2)
+                    let bestSelectedCount = bestSelectedCount(bucket1: bucket1,
+                                                              bucket2: bucket2)
+                    let match = CapOffMatch2(bucket1: bucket1,
+                                             bucket2: bucket2,
+                                             bestSelectedCount: bestSelectedCount)
                     capoffMatches2.append(match)
                 }
                 index1 += 1
             }
         }
-        
         
         let oneSumLowerBound = oneSumBucketLowerBound(height: target - Self.capoffTolerance)
         let oneSumUpperBound = oneSumBucketUpperBound(height: target)
@@ -1247,36 +1319,366 @@ extension ConceptLayout {
             index1 = oneSumLowerBound
             while index1 < oneSumUpperBound {
                 let bucket1 = capoffHeightBucketList[index1]
-                let match = CapOffMatch1(bucket1: bucket1)
+                let bestSelectedCount = bestSelectedCount(bucket1: bucket1)
+                let match = CapOffMatch1(bucket1: bucket1,
+                                         bestSelectedCount: bestSelectedCount)
                 capoffMatches1.append(match)
                 index1 += 1
             }
         }
         
-        print("fourSumCount = \(capoffMatches4.count)")
-        print("threeSumCount = \(capoffMatches3.count)")
-        print("twoSumCount = \(capoffMatches2.count)")
-        print("twoSumCount = \(capoffMatches2.count)")
-        print("oneSumCount = \(capoffMatches1.count)")
+        capOffStir()
         
-        /*
-         capoffNodes.sort {
-             $0.tempHeight < $1.tempHeight
-         }
-        
-        for node in nodes {
-            //print("\(node.fileName) => \(node.tempHeight)")
-        }
-        
-        let match = capOffFindClosestMatch(sorted: nodes, strip: strip)
-        
-        
-        for a in match {
-            _usedNodes.insert(a)
-            strip.add(node: a, ratio: getWidthRatio(node: a, strip: strip))
-        }
-        */
+        capOffProceedWithMatches(strip: strip, stripLayoutNodeType: stripLayoutNodeType)
     }
+    
+    func capOffStir() {
+        for index in 0..<capoffMatches4.count {
+            let rand = randomBucket.nextInt(capoffMatches4.count)
+            capoffMatches4.swapAt(rand, index)
+        }
+        for index in 0..<capoffMatches3.count {
+            let rand = randomBucket.nextInt(capoffMatches3.count)
+            capoffMatches3.swapAt(rand, index)
+        }
+        for index in 0..<capoffMatches2.count {
+            let rand = randomBucket.nextInt(capoffMatches2.count)
+            capoffMatches2.swapAt(rand, index)
+        }
+        for index in 0..<capoffMatches1.count {
+            let rand = randomBucket.nextInt(capoffMatches1.count)
+            capoffMatches1.swapAt(rand, index)
+        }
+        for bucket in capoffHeightBucketList {
+            for index in 0..<bucket.nodesSelected.count {
+                let rand = randomBucket.nextInt(bucket.nodesSelected.count)
+                bucket.nodesSelected.swapAt(rand, index)
+            }
+            for index in 0..<bucket.nodesUnselected.count {
+                let rand = randomBucket.nextInt(bucket.nodesUnselected.count)
+                bucket.nodesUnselected.swapAt(rand, index)
+            }
+        }
+    }
+    
+    func capOffProceedWithMatches(strip: ConceptStrip, stripLayoutNodeType: LayoutNodeType) {
+
+        let capOffTypes = capOffTypesRandomized()
+        for capOffType in capOffTypes {
+            switch capOffType {
+            case .one:
+                if capOffTryOne(strip: strip, stripLayoutNodeType: stripLayoutNodeType, requiredSelectedCount: 1) {
+                    return
+                }
+            case .two:
+                if capOffTryTwo(strip: strip, stripLayoutNodeType: stripLayoutNodeType, requiredSelectedCount: 2) {
+                    return
+                }
+            case .three:
+                if capOffTryThree(strip: strip, stripLayoutNodeType: stripLayoutNodeType, requiredSelectedCount: 3) {
+                    return
+                }
+            case .four:
+                if capOffTryFour(strip: strip, stripLayoutNodeType: stripLayoutNodeType, requiredSelectedCount: 4) {
+                    return
+                }
+            }
+        }
+        
+        if capOffTryFour(strip: strip, stripLayoutNodeType: stripLayoutNodeType, requiredSelectedCount: 3) {
+            return
+        }
+        
+        if capOffTryThree(strip: strip, stripLayoutNodeType: stripLayoutNodeType, requiredSelectedCount: 2) {
+            return
+        }
+        
+        if randomBucket.nextBool() {
+            if capOffTryTwo(strip: strip, stripLayoutNodeType: stripLayoutNodeType, requiredSelectedCount: 1) {
+                return
+            }
+            if capOffTryFour(strip: strip, stripLayoutNodeType: stripLayoutNodeType, requiredSelectedCount: 2) {
+                return
+            }
+        } else {
+            if capOffTryFour(strip: strip, stripLayoutNodeType: stripLayoutNodeType, requiredSelectedCount: 2) {
+                return
+            }
+            if capOffTryTwo(strip: strip, stripLayoutNodeType: stripLayoutNodeType, requiredSelectedCount: 1) {
+                return
+            }
+        }
+        
+        if capOffTryThree(strip: strip, stripLayoutNodeType: stripLayoutNodeType, requiredSelectedCount: 1) {
+            return
+        }
+        
+        if capOffTryFour(strip: strip, stripLayoutNodeType: stripLayoutNodeType, requiredSelectedCount: 1) {
+            return
+        }
+        
+        for capOffType in capOffTypes {
+            switch capOffType {
+            case .one:
+                if capOffTryOne(strip: strip, stripLayoutNodeType: stripLayoutNodeType, requiredSelectedCount: 0) {
+                    return
+                }
+            case .two:
+                if capOffTryTwo(strip: strip, stripLayoutNodeType: stripLayoutNodeType, requiredSelectedCount: 0) {
+                    return
+                }
+            case .three:
+                if capOffTryThree(strip: strip, stripLayoutNodeType: stripLayoutNodeType, requiredSelectedCount: 0) {
+                    return
+                }
+            case .four:
+                if capOffTryFour(strip: strip, stripLayoutNodeType: stripLayoutNodeType, requiredSelectedCount: 0) {
+                    return
+                }
+            }
+        }
+    }
+    
+    func capOffTypesRandomized() -> [CapOffType] {
+        var result: [CapOffType] = [.one, .two, .three, .four]
+        for index in 0..<result.count {
+            let rand = randomBucket.nextInt(result.count)
+            result.swapAt(rand, index)
+        }
+        return result
+    }
+    
+    func capOffComplete(strip: ConceptStrip, node1: ImageCollectionNode, node2: ImageCollectionNode, node3: ImageCollectionNode, node4: ImageCollectionNode) {
+        capOffComplete(strip: strip, node1: node1)
+        capOffComplete(strip: strip, node1: node2)
+        capOffComplete(strip: strip, node1: node3)
+        capOffComplete(strip: strip, node1: node4)
+    }
+    
+    func capOffComplete(strip: ConceptStrip, node1: ImageCollectionNode, node2: ImageCollectionNode, node3: ImageCollectionNode) {
+        capOffComplete(strip: strip, node1: node1)
+        capOffComplete(strip: strip, node1: node2)
+        capOffComplete(strip: strip, node1: node3)
+    }
+    
+    func capOffComplete(strip: ConceptStrip, node1: ImageCollectionNode, node2: ImageCollectionNode) {
+        capOffComplete(strip: strip, node1: node1)
+        capOffComplete(strip: strip, node1: node2)
+    }
+    
+    func capOffComplete(strip: ConceptStrip, node1: ImageCollectionNode) {
+        
+        let ratio = getWidthRatio(node: node1, strip: strip)
+        strip.add(node: node1, ratio: ratio)
+        node1.tempUsed = true
+        
+        if node1.tempSelected {
+            switch node1.type {
+            case .word:
+                _usedSelectedWordsCount += 1
+            case .idea:
+                _usedSelectedIdeasCount += 1
+            }
+        } else {
+            switch node1.type {
+            case .word:
+                _usedUnselectedWordsCount += 1
+            case .idea:
+                _usedUnselectedIdeasCount += 1
+            }
+        }
+    }
+    
+    func capOffNotSame(node1: ImageCollectionNode, node2: ImageCollectionNode, node3: ImageCollectionNode, node4: ImageCollectionNode) -> Bool {
+        if node1 == node2 { return false }
+        if node1 == node3 { return false }
+        if node1 == node4 { return false }
+        if node2 == node3 { return false }
+        if node2 == node4 { return false }
+        if node3 == node4 { return false }
+        return true
+    }
+    
+    func capOffNotSame(node1: ImageCollectionNode, node2: ImageCollectionNode, node3: ImageCollectionNode) -> Bool {
+        if node1 == node2 { return false }
+        if node1 == node3 { return false }
+        if node2 == node3 { return false }
+        return true
+    }
+    
+    func capOffNotSame(node1: ImageCollectionNode, node2: ImageCollectionNode) -> Bool {
+        if node1 == node2 { return false }
+        return true
+    }
+    
+    func capOffTryOne(strip: ConceptStrip, stripLayoutNodeType: LayoutNodeType, requiredSelectedCount: Int) -> Bool {
+        
+        // Can we just skip this?
+        var selectedCountAvailable = 0
+        var selectedCountUsed = 0
+        switch stripLayoutNodeType {
+        case .any:
+            selectedCountAvailable = _selectedWordsCount + _selectedIdeasCount
+            selectedCountUsed = _usedSelectedWordsCount + _usedSelectedIdeasCount
+        case .idea:
+            selectedCountAvailable = _selectedIdeasCount
+            selectedCountUsed = _usedSelectedIdeasCount
+        case .word:
+            selectedCountAvailable = _selectedWordsCount
+            selectedCountUsed = _usedSelectedWordsCount
+        }
+        
+        if (selectedCountAvailable - selectedCountUsed) < requiredSelectedCount {
+            //print("skip try 1, selectedCountAvailable = \(selectedCountAvailable), selectedCountUsed = \(selectedCountUsed), requiredSelectedCount = \(requiredSelectedCount)")
+            return false
+        }
+        
+        for match in capoffMatches1 {
+            if match.bestSelectedCount == requiredSelectedCount {
+                let arr1 = match.bucket1.nodesSelected.count > 0 ? match.bucket1.nodesSelected : match.bucket1.nodesUnselected
+                for node1 in arr1 {
+                    capOffComplete(strip: strip, node1: node1)
+                    return true
+                }
+            }
+        }
+        
+        return false
+    }
+    
+    func capOffTryTwo(strip: ConceptStrip, stripLayoutNodeType: LayoutNodeType, requiredSelectedCount: Int) -> Bool {
+        
+        // Can we just skip this?
+        var selectedCountAvailable = 0
+        var selectedCountUsed = 0
+        switch stripLayoutNodeType {
+        case .any:
+            selectedCountAvailable = _selectedWordsCount + _selectedIdeasCount
+            selectedCountUsed = _usedSelectedWordsCount + _usedSelectedIdeasCount
+        case .idea:
+            selectedCountAvailable = _selectedIdeasCount
+            selectedCountUsed = _usedSelectedIdeasCount
+        case .word:
+            selectedCountAvailable = _selectedWordsCount
+            selectedCountUsed = _usedSelectedWordsCount
+        }
+        
+        if (selectedCountAvailable - selectedCountUsed) < requiredSelectedCount {
+            //print("skip try 2, selectedCountAvailable = \(selectedCountAvailable), selectedCountUsed = \(selectedCountUsed), requiredSelectedCount = \(requiredSelectedCount)")
+            return false
+        }
+        
+        for match in capoffMatches2 {
+            if match.bestSelectedCount == requiredSelectedCount {
+                let arr1 = match.bucket1.nodesSelected.count > 0 ? match.bucket1.nodesSelected : match.bucket1.nodesUnselected
+                let arr2 = match.bucket2.nodesSelected.count > 0 ? match.bucket2.nodesSelected : match.bucket2.nodesUnselected
+                for node1 in arr1 {
+                    for node2 in arr2 {
+                        if capOffNotSame(node1: node1, node2: node2) {
+                            capOffComplete(strip: strip, node1: node1, node2: node2)
+                            return true
+                        }
+                    }
+                }
+            }
+        }
+        
+        return false
+    }
+    
+    func capOffTryThree(strip: ConceptStrip, stripLayoutNodeType: LayoutNodeType, requiredSelectedCount: Int) -> Bool {
+        
+        // Can we just skip this?
+        var selectedCountAvailable = 0
+        var selectedCountUsed = 0
+        switch stripLayoutNodeType {
+        case .any:
+            selectedCountAvailable = _selectedWordsCount + _selectedIdeasCount
+            selectedCountUsed = _usedSelectedWordsCount + _usedSelectedIdeasCount
+        case .idea:
+            selectedCountAvailable = _selectedIdeasCount
+            selectedCountUsed = _usedSelectedIdeasCount
+        case .word:
+            selectedCountAvailable = _selectedWordsCount
+            selectedCountUsed = _usedSelectedWordsCount
+        }
+        
+        if (selectedCountAvailable - selectedCountUsed) < requiredSelectedCount {
+            //print("skip try 3, selectedCountAvailable = \(selectedCountAvailable), selectedCountUsed = \(selectedCountUsed), requiredSelectedCount = \(requiredSelectedCount)")
+            return false
+        }
+        
+        for match in capoffMatches3 {
+            if match.bestSelectedCount == requiredSelectedCount {
+                let arr1 = match.bucket1.nodesSelected.count > 0 ? match.bucket1.nodesSelected : match.bucket1.nodesUnselected
+                let arr2 = match.bucket2.nodesSelected.count > 0 ? match.bucket2.nodesSelected : match.bucket2.nodesUnselected
+                let arr3 = match.bucket3.nodesSelected.count > 0 ? match.bucket3.nodesSelected : match.bucket3.nodesUnselected
+                for node1 in arr1 {
+                    for node2 in arr2 {
+                        for node3 in arr3 {
+                            if capOffNotSame(node1: node1, node2: node2, node3: node3) {
+                                capOffComplete(strip: strip, node1: node1, node2: node2, node3: node3)
+                                return true
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return false
+    }
+    
+    func capOffTryFour(strip: ConceptStrip, stripLayoutNodeType: LayoutNodeType, requiredSelectedCount: Int) -> Bool {
+        
+        
+        // Can we just skip this?
+        var selectedCountAvailable = 0
+        var selectedCountUsed = 0
+        switch stripLayoutNodeType {
+        case .any:
+            selectedCountAvailable = _selectedWordsCount + _selectedIdeasCount
+            selectedCountUsed = _usedSelectedWordsCount + _usedSelectedIdeasCount
+        case .idea:
+            selectedCountAvailable = _selectedIdeasCount
+            selectedCountUsed = _usedSelectedIdeasCount
+        case .word:
+            selectedCountAvailable = _selectedWordsCount
+            selectedCountUsed = _usedSelectedWordsCount
+        }
+        
+        if (selectedCountAvailable - selectedCountUsed) < requiredSelectedCount {
+            //print("skip try 4, selectedCountAvailable = \(selectedCountAvailable), selectedCountUsed = \(selectedCountUsed), requiredSelectedCount = \(requiredSelectedCount)")
+            return false
+        }
+         
+        for match in capoffMatches4 {
+            if match.bestSelectedCount == requiredSelectedCount {
+                let arr1 = match.bucket1.nodesSelected.count > 0 ? match.bucket1.nodesSelected : match.bucket1.nodesUnselected
+                let arr2 = match.bucket2.nodesSelected.count > 0 ? match.bucket2.nodesSelected : match.bucket2.nodesUnselected
+                let arr3 = match.bucket3.nodesSelected.count > 0 ? match.bucket3.nodesSelected : match.bucket3.nodesUnselected
+                let arr4 = match.bucket4.nodesSelected.count > 0 ? match.bucket4.nodesSelected : match.bucket4.nodesUnselected
+                for node1 in arr1 {
+                    for node2 in arr2 {
+                        for node3 in arr3 {
+                            for node4 in arr4 {
+                                if capOffNotSame(node1: node1, node2: node2, node3: node3, node4: node4) {
+                                    capOffComplete(strip: strip, node1: node1, node2: node2, node3: node3, node4: node4)
+                                    return true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false
+    }
+    
+    
+    //var bestSelectedCount = 0
+    
+    
     
     /*
     func capOffFloodOneSum(target: Int) {

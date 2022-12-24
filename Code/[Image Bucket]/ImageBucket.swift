@@ -96,11 +96,15 @@ class ImageBucket {
             }
         }
         
+        _ignoreBagWords.removeAll(keepingCapacity: true)
+        _ignoreBagIdeas.removeAll(keepingCapacity: true)
+        
         let previouslyUsedWordsSet = Set<ImageCollectionNode>(previouslyUsedWords)
         var new_pulledWords = [ImageCollectionNode]()
         for node in _pulledWords {
             if !previouslyUsedWordsSet.contains(node) && !selectedBag.contains(node) {
                 new_pulledWords.append(node)
+                _ignoreBagWords.insert(node)
             }
         }
         
@@ -109,11 +113,11 @@ class ImageBucket {
         for node in _pulledIdeas {
             if !previouslyUsedIdeasSet.contains(node) && !selectedBag.contains(node) {
                 new_pulledIdeas.append(node)
+                _ignoreBagIdeas.insert(node)
             }
         }
         
-        _ignoreBagWords.removeAll(keepingCapacity: true)
-        _ignoreBagIdeas.removeAll(keepingCapacity: true)
+        
         for node in ignoreBag.bag {
             switch node.type {
             case .idea:
@@ -130,10 +134,13 @@ class ImageBucket {
         }
         
         let numberOfWordsToPull = maximumGridCount - (new_pulledWords.count + _selectedWords.count)
+        print("numberOfWordsToPull = \(numberOfWordsToPull)")
         let fetchedWords = collectionWords.fetch(count: numberOfWordsToPull, ignoreBag: _ignoreBagWords)
         new_pulledWords.append(contentsOf: fetchedWords)
         
         let numberOfIdeasToPull = maximumGridCount - (new_pulledIdeas.count + _selectedIdeas.count)
+        print("numberOfIdeasToPull = \(numberOfIdeasToPull)")
+        
         let fetchedIdeas = collectionIdeas.fetch(count: numberOfIdeasToPull, ignoreBag: _ignoreBagIdeas)
         new_pulledIdeas.append(contentsOf: fetchedIdeas)
         
@@ -165,6 +172,9 @@ class ImageBucket {
         ideas.removeAll(keepingCapacity: true)
         for node in _selectedIdeas { ideas.append(node) }
         for node in _pulledIdeas { ideas.append(node) }
+        
+        print("words count: \(words.count), sel: \(_selectedWords.count), pul: \(_pulledWords.count)")
+        print("ideas count: \(ideas.count), sel: \(_selectedIdeas.count), pul: \(_pulledIdeas.count)")
         
         //printArray(name: "words", arr: words)
         //printArray(name: "ideas", arr: ideas)
