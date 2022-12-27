@@ -10,6 +10,7 @@ import Foundation
 class ImageBucketState {
     let randomBucketState: RandomBucketState
     let ignoreBagState: ImageBucketIgnoreBagState
+    let evictBagState: ImageBucketEvictBagState
     
     let selectionState: ImageBucketSelectionState
     
@@ -18,12 +19,14 @@ class ImageBucketState {
     
     init(randomBucket: RandomBucket,
          ignoreBag: ImageBucketIgnoreBag,
+         evictBag: ImageBucketEvictBag,
          selectionState: ImageBucketSelectionState,
          words: [ImageCollectionNode],
          ideas: [ImageCollectionNode]
     ) {
         self.randomBucketState = randomBucket.saveToState()
         self.ignoreBagState = ignoreBag.saveToState()
+        self.evictBagState = evictBag.saveToState()
         
         self.selectionState = selectionState
         

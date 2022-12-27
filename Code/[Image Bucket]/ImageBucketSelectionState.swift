@@ -11,9 +11,12 @@ class ImageBucketSelectionState {
     
     let selectedBagContents: [String]
     let recentlySelectedBagContents: [String]
+    let recentlyDeselectedBagContents: [String]
+    
     
     init(selectedBag: Set<ImageCollectionNode>,
-         recentlySelectedBag: Set<ImageCollectionNode>
+         recentlySelectedBag: Set<ImageCollectionNode>,
+         recentlyDeselectedBag: Set<ImageCollectionNode>
     ) {
         var _selectedBagContents = [String]()
         for node in selectedBag {
@@ -26,5 +29,11 @@ class ImageBucketSelectionState {
             _recentlySelectedBagContents.append(node.fileName)
         }
         self.recentlySelectedBagContents = _recentlySelectedBagContents
+        
+        var _recentlyDeselectedBagContents = [String]()
+        for node in recentlyDeselectedBag {
+            _recentlyDeselectedBagContents.append(node.fileName)
+        }
+        self.recentlyDeselectedBagContents = _recentlyDeselectedBagContents
     }
 }

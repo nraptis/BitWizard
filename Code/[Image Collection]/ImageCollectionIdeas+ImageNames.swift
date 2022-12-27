@@ -11,46 +11,87 @@ extension ImageCollectionIdeas {
     
     static func imageNames() -> [String] {
         let text = """
-        IDEA_rice_krispies_box.png
+        IDEA_ankle_tether.png
+        IDEA_ant_farm.png
+        IDEA_backhoe_with_dirt.png
         IDEA_bacon_strips.png
+        IDEA_ball_chain.png
         IDEA_barbecue_ribs.png
+        IDEA_bike_tire_air_valve.png
+        IDEA_birthday_cake_candles.png
         IDEA_birthday_hat.png
+        IDEA_birthday_presents_and_text.png
         IDEA_birthday_stuff.png
+        IDEA_blossom_cookies.png
+        IDEA_blow_pops_arc.png
+        IDEA_blow_pops_wrapped_in_line.png
         IDEA_boquet_of_flowers_in_hand.png
+        IDEA_boxed_red_wine.png
+        IDEA_boxing_glove.png
+        IDEA_bread_and_butter.png
+        IDEA_bud_light_cans.png
+        IDEA_bulldozer_field_tractor.png
+        IDEA_bulldozer_with_dirt.png
         IDEA_burger_king.png
+        IDEA_buttered_toast.png
         IDEA_buttons.png
         IDEA_cake_wine.png
+        IDEA_candy_bar_cross_section_peanuts.png
         IDEA_cannon_shot.png
+        IDEA_canon_camera.png
+        IDEA_cardboard_boxes_sealed.png
+        IDEA_cheese_burger_white_background.png
+        IDEA_cheese_slices_stacked_orange.png
+        IDEA_cheese_slices_white_and_orange.png
         IDEA_cheese_wheel_slice.png
         IDEA_chipmunk_coffee.png
+        IDEA_chocolate_bunies.png
         IDEA_chocolate_buny.png
         IDEA_chocolate_cupcake_pink_frosting_cherry.png
         IDEA_chocolate_cupcake_white_frosting_sprinkles.png
         IDEA_chocolate_cupcake.png
+        IDEA_christmas_cookies.png
+        IDEA_christmas_festival.png
+        IDEA_christmas_lights_large_colored_bulbs.png
+        IDEA_christmas_lights_up_close_white.png
         IDEA_christmas_village_decoration.png
+        IDEA_christmas_village.png
+        IDEA_christmas_wreath_isolated.png
         IDEA_cinnamon_bun.png
+        IDEA_clown_nose_red_ball.png
         IDEA_cocoa_puffs_bowl.png
         IDEA_cocoa_puffs_box.png
         IDEA_cocoa_puffs_on_spoon.png
         IDEA_cooked_meat.png
+        IDEA_couch_pillows.png
         IDEA_cough_syrup.png
         IDEA_count_chocula_dense.png
         IDEA_count_chocula_vampire.png
         IDEA_cow_face.png
+        IDEA_crayola_crayons_4_pack.png
         IDEA_dandelion_seeds_blowing.png
         IDEA_dirty_paint_brushes.png
         IDEA_disco_roller_skates.png
         IDEA_disney_castle_night.png
+        IDEA_disney_castle.png
         IDEA_dog_with_hose.png
+        IDEA_dominoes_toppling.png
         IDEA_doughnut.png
+        IDEA_easter_basket.png
+        IDEA_easter_bunny_baby.png
         IDEA_egg_emojis.png
         IDEA_egg_mc_muffin.png
         IDEA_eggs_and_toast.png
         IDEA_ferris_wheel_neon.png
         IDEA_ferris_wheel.png
+        IDEA_fishing_lure.png
+        IDEA_flaming_shot.png
+        IDEA_floating_on_inner_tube.png
+        IDEA_foil_hat_woman.png
         IDEA_frosted_flakes_in_milk.png
         IDEA_frosted_flakes_on_spoon_in_milk.png
         IDEA_frosted_mini_wheats_bowl.png
+        IDEA_frosted_mini_wheats_box.png
         IDEA_frosted_mini_wheats_milk_pour.png
         IDEA_fruit_bowl_apples_cherries.png
         IDEA_fruit_bowl_oranges_kiwis.png
@@ -59,57 +100,115 @@ extension ImageCollectionIdeas {
         IDEA_fruit_loops_in_milk.png
         IDEA_fruit_loops_milk_pour.png
         IDEA_fruit_loops_on_spoon.png
+        IDEA_fuzzy_red_dice.png
+        IDEA_garden_shovel.png
+        IDEA_garden_tools.png
+        IDEA_gingerbread_christmas_cookies.png
         IDEA_gingerbread_macarons.png
         IDEA_gold_mickey_mouse.png
         IDEA_grilled_cheese.png
+        IDEA_gummy_bears.png
+        IDEA_gyroscope.png
         IDEA_hamster_ball.png
+        IDEA_hand_saw.png
         IDEA_harmonica.png
+        IDEA_hook_hand.png
         IDEA_hostess_cupcake.png
         IDEA_hot_pepper.png
         IDEA_hotdogs_relish.png
+        IDEA_ice_cold_bud_lights_blue.png
+        IDEA_icicles.png
         IDEA_inhaler.png
+        IDEA_inner_tube.png
+        IDEA_jolly_rancher.png
+        IDEA_lemon_water.png
+        IDEA_long_hair_cow_nose_ring.png
         IDEA_low_fuel.png
         IDEA_lucky_charms_box.png
         IDEA_lucky_charms_dense.png
         IDEA_lucky_charms_in_bowl_30_degree.png
         IDEA_lucky_charms_on_spoon.png
+        IDEA_m_m_christmas_cookies.png
         IDEA_m_m_s.png
         IDEA_maine_lobster.png
+        IDEA_mcdonalds_oldschool.png
         IDEA_mcdonalds_sign.png
+        IDEA_milk_almond_coconut.png
+        IDEA_milk_pour_into_glass.png
+        IDEA_milk_pour_splash.png
+        IDEA_milky_way_bar_broken_gooey.png
         IDEA_mobile_airplanes_clouds.png
+        IDEA_mobile_rainbow_stars_clouds.png
+        IDEA_mood_ring_aqua.png
         IDEA_mushroom.png
         IDEA_musical_bar.png
         IDEA_neon_tooth_brush.png
+        IDEA_nose_ring_white_gold.png
+        IDEA_pacifier.png
         IDEA_paint_brush_and_paint_buckets.png
+        IDEA_paper_plates_sprawled.png
+        IDEA_peanut_butter_toast.png
+        IDEA_piggy_bank.png
         IDEA_pinwheel.png
         IDEA_potted_cacti.png
+        IDEA_present_with_bow.png
+        IDEA_pumpkin_patch.png
+        IDEA_push_lawn_mower.png
         IDEA_rainbow_cupcake.png
+        IDEA_red_twizzlers.png
         IDEA_reeces_cup.png
+        IDEA_rice_cake_stack.png
+        IDEA_rice_cakes_flat.png
+        IDEA_rice_krispies_box.png
         IDEA_rice_krispies_in_red_bowl.png
         IDEA_rice_krispies_treats_stacked.png
+        IDEA_riding_mower_unmanned.png
+        IDEA_riding_mower_with_man.png
+        IDEA_ring_pop.png
         IDEA_roasted_bacon.png
         IDEA_roasted_turkey.png
         IDEA_roller_coaster_corkscrew.png
         IDEA_roller_coaster.png
+        IDEA_rolo_guts.png
+        IDEA_rolos_one_chopped.png
+        IDEA_saguaro_cactuses_in_desert.png
         IDEA_santa_hat.png
         IDEA_scrambled_eggs_and_toast.png
+        IDEA_skull_wig.png
+        IDEA_snickers_bar_broken.png
+        IDEA_snickers_bar_two_halves.png
+        IDEA_snow_angel.png
         IDEA_snow_man_carrot_nose.png
+        IDEA_snow_man_snow_angel.png
         IDEA_snowglobe.png
+        IDEA_speed_limit_cars_trucks.png
+        IDEA_speed_limit_radar_enforced.png
+        IDEA_starbursts_pile_wrapped.png
         idea_steak_on_grill.png
         IDEA_steak.png
+        IDEA_sunscreen_for_babies.png
         IDEA_taped_banana.png
         IDEA_thanksgiving_dinner.png
+        IDEA_thorns.png
         IDEA_toilet_paper_empty.png
+        IDEA_toilet_paper_last_piece.png
         IDEA_toilet_paper_roll.png
         IDEA_toilet_paper_rolls.png
         IDEA_tooth_brush_with_paste.png
+        IDEA_toy_recycling_truck.png
+        IDEA_treasure_chest_on_white.png
         IDEA_trix_bowl_30_degree.png
         IDEA_trix_bowl.png
         IDEA_trix_box.png
         IDEA_unisex_bathroom.png
         IDEA_vegetable_tray.png
+        IDEA_video_camera.png
+        IDEA_wedding_cake_topper.png
+        IDEA_wedding_figurines.png
+        IDEA_weed_leaf.png
         IDEA_whopper_fries.png
         IDEA_wind_uo_teeth.png
+        IDEA_wrapped_gift_boxes.png
         IDEA_yarn_balls.png
         """
         

@@ -190,7 +190,7 @@ class ConceptLayout {
     let randomBucket = RandomBucket()
     
     
-    var stripLayoutNodeType: LayoutNodeType = .word
+    var stripLayoutNodeType: LayoutNodeType = .any
     
     required init(imageBucket: ImageBucket) {
         self.imageBucket = imageBucket
@@ -206,6 +206,32 @@ class ConceptLayout {
             baseID += 1
         } else {
             baseID = Int.min
+        }
+    }
+    
+    func randomNextWord() -> Bool {
+        let wordCount = imageBucket.collectionWords.nodes.count
+        let ideaCount = imageBucket.collectionIdeas.nodes.count
+        let totalCount = wordCount + ideaCount
+        if totalCount > 0 {
+            let ratio = CGFloat(wordCount) / CGFloat(totalCount)
+            let rand = randomBucket.nextFloat(1.0)
+            return (rand <= ratio)
+        } else {
+            return false
+        }
+    }
+    
+    func randomNextIdea() -> Bool {
+        let wordCount = imageBucket.collectionWords.nodes.count
+        let ideaCount = imageBucket.collectionIdeas.nodes.count
+        let totalCount = wordCount + ideaCount
+        if totalCount > 0 {
+            let ratio = CGFloat(ideaCount) / CGFloat(totalCount)
+            let rand = randomBucket.nextFloat(1.0)
+            return (rand <= ratio)
+        } else {
+            return false
         }
     }
     
@@ -434,7 +460,7 @@ class ConceptLayout {
     }
     
     func dequeueAny() -> ImageCollectionNode? {
-        if randomBucket.nextBool() {
+        if randomNextWord() {
             if let result = dequeueWord() {
                 return result
             }
@@ -587,8 +613,6 @@ class ConceptLayout {
             strips.swapAt(index, rand)
         }
         
-        
-        
         for index in indices {
             capOff(strip: strips[index], stripLayoutNodeType: stripLayoutNodeType)
         }
@@ -602,7 +626,6 @@ class ConceptLayout {
             }
         }
     }
-    
 }
 
 extension ConceptLayout {
@@ -694,10 +717,10 @@ extension ConceptLayout {
             } else if finishedCheckingIdeas {
                 type = .word
             } else {
-                if randomBucket.nextBool() {
-                    type = .idea
-                } else {
+                if randomNextWord() {
                     type = .word
+                } else {
+                    type = .idea
                 }
             }
             
@@ -832,10 +855,10 @@ extension ConceptLayout {
             } else if finishedCheckingIdeas {
                 type = .word
             } else {
-                if randomBucket.nextBool() {
-                    type = .idea
-                } else {
+                if randomNextWord() {
                     type = .word
+                } else {
+                    type = .idea
                 }
             }
             
@@ -1113,11 +1136,46 @@ extension ConceptLayout {
             }
         }
         
+        if capoffNodes.count <= 0 {
+            return
+        }
+        
         for node in capoffNodes {
             let ratio = getWidthRatio(node: node, strip: strip)
             node.tempWidth = Int(strip.width + 0.5)
             node.tempHeight = Int(node.height * ratio + 0.5)
         }
+        
+        var tallestNode: ImageCollectionNode?
+        var tallestHeight: Int = 0
+        for node in capoffNodes {
+            if node.tempHeight > tallestHeight {
+                tallestHeight = node.tempHeight
+                tallestNode = node
+            }
+        }
+        var secondTallestHeight: Int = 0
+        for node in capoffNodes {
+            if (node !== tallestNode) && (node.tempHeight > secondTallestHeight) {
+                secondTallestHeight = node.tempHeight
+            }
+        }
+        
+        var shortestNode: ImageCollectionNode?
+        var shortestHeight: Int = Int.max
+        for node in capoffNodes {
+            if node.tempHeight < shortestHeight {
+                shortestHeight = node.tempHeight
+                shortestNode = node
+            }
+        }
+        var secondShortestHeight: Int = Int.max
+        for node in capoffNodes {
+            if (node !== shortestNode) && (node.tempHeight < secondShortestHeight) {
+                secondShortestHeight = node.tempHeight
+            }
+        }
+        
         
         // Collect all of the nodes with the same width into buckets.
         for node in capoffNodes {
@@ -1160,16 +1218,26 @@ extension ConceptLayout {
             index2 = index1 + 1
             while index2 < cap2 {
                 let sum = capoffHeightBucketList[index1].height + capoffHeightBucketList[index2].height
-                if sum < target {
-                    if let bucket = capoffTwoSumBucketDict[sum] {
-                        bucket.pairs.append(CapOffTwoSumBucketPair(heightBucket1: capoffHeightBucketList[index1],
-                                                                   heightBucket2: capoffHeightBucketList[index2]))
-                    } else {
-                        let bucket = CapOffTwoSumBucket(height: sum)
-                        bucket.pairs.append(CapOffTwoSumBucketPair(heightBucket1: capoffHeightBucketList[index1],
-                                                                   heightBucket2: capoffHeightBucketList[index2]))
-                        capoffTwoSumBucketList.append(bucket)
-                        capoffTwoSumBucketDict[sum] = bucket
+                if sum <= target {
+                    
+                    let inRangeLowerBound = target - Self.capoffTolerance
+                    let inRangeUpperBound = target
+                    let inRangeAlready = (sum >= inRangeLowerBound) && (sum <= inRangeUpperBound)
+                    
+                    let inRangeAddingOneOrTwo = (sum >= (inRangeLowerBound - shortestHeight)) && (sum <= (inRangeUpperBound + tallestHeight + secondTallestHeight))
+                    
+                    if inRangeAlready || inRangeAddingOneOrTwo {
+                        
+                        if let bucket = capoffTwoSumBucketDict[sum] {
+                            bucket.pairs.append(CapOffTwoSumBucketPair(heightBucket1: capoffHeightBucketList[index1],
+                                                                       heightBucket2: capoffHeightBucketList[index2]))
+                        } else {
+                            let bucket = CapOffTwoSumBucket(height: sum)
+                            bucket.pairs.append(CapOffTwoSumBucketPair(heightBucket1: capoffHeightBucketList[index1],
+                                                                       heightBucket2: capoffHeightBucketList[index2]))
+                            capoffTwoSumBucketList.append(bucket)
+                            capoffTwoSumBucketDict[sum] = bucket
+                        }
                     }
                     index2 += 1
                 } else {
@@ -1178,6 +1246,7 @@ extension ConceptLayout {
             }
             index1 += 1
         }
+        
         
         //Sort the two-sums...
         capoffTwoSumBucketList.sort {
@@ -1193,7 +1262,7 @@ extension ConceptLayout {
             index2 = 0
             while index2 < cap2 {
                 let sum = capoffHeightBucketList[index1].height + capoffTwoSumBucketList[index2].height
-                if sum < target {
+                if sum <= target {
                     if let bucket = capoffThreeSumBucketDict[sum] {
                         bucket.pairs.append(CapOffThreeSumBucketPair(twoSumBucket: capoffTwoSumBucketList[index2], heightBucket: capoffHeightBucketList[index1]))
                     } else {
@@ -1202,6 +1271,7 @@ extension ConceptLayout {
                         capoffThreeSumBucketDict[sum] = bucket
                         capoffThreeSumBucketList.append(bucket)
                     }
+                    
                     index2 += 1
                 } else {
                     break

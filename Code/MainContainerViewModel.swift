@@ -12,9 +12,10 @@ class MainContainerViewModel: ObservableObject {
     @Published var appMode: AppMode = .grid
     @Published var showHideMode: ShowHideMode = .showAll
     
-    private static let maximumGridCount = 140
+    private static let maximumGridCountWords = 110
+    private static let maximumGridCountIdeas = 110
     
-    private(set) var gridWidth = 3
+    private(set) var gridWidth = 1
     
     private var minGridWidth = 1
     private var maxGridWidth = ApplicationController.isIpad() ? 16 : 8
@@ -60,7 +61,8 @@ class MainContainerViewModel: ObservableObject {
         
         //shuffle()
         //imageBucket.collectionWords.shuffle()
-        imageBucket.beginFreshPull(maximumGridCount: Self.maximumGridCount,
+        imageBucket.beginFreshPull(maximumGridCountWords: Self.maximumGridCountWords,
+                                   maximumGridCountIdeas: Self.maximumGridCountIdeas,
                                    previouslyUsedWords: [],
                                    previouslyUsedIdeas: [])
         
@@ -169,7 +171,8 @@ class MainContainerViewModel: ObservableObject {
         
         
         //TODO: maximumGridCount
-        imageBucket.beginFreshPull(maximumGridCount: Self.maximumGridCount,
+        imageBucket.beginFreshPull(maximumGridCountWords: Self.maximumGridCountWords,
+                                   maximumGridCountIdeas: Self.maximumGridCountIdeas,
                                    previouslyUsedWords: previouslyUsedWords,
                                    previouslyUsedIdeas: previouslyUsedIdeas)
         
@@ -502,15 +505,6 @@ class MainContainerViewModel: ObservableObject {
         
         historyController.historyAdd(state: historyState)
     }
-    
-    /*
-    func saveHistoryStateSelection() {
-        
-        let imageBucketSelectionState = imageBucket.saveSelectionToState()
-        let historyState = HistoryStateSelection(imageBucketSelectionState: imageBucketSelectionState)
-        historyController.historyAdd(state: historyState)
-    }
-    */
     
     func undoIntent() {
         historyController.undo()

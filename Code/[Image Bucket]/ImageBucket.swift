@@ -35,9 +35,19 @@ class ImageBucket {
                              collectionWords: collectionWords,
                              collectionIdeas: collectionIdeas)
     }()
+    private lazy var evictBag = {
+        ImageBucketEvictBag(imageBucket: self,
+                            collectionWords: collectionWords,
+                            collectionIdeas: collectionIdeas)
+    }()
+    
+    
+    
     
     var selectedBag = Set<ImageCollectionNode>()
     var recentlySelectedBag = Set<ImageCollectionNode>()
+    var recentlyDeselectedBag = Set<ImageCollectionNode>()
+    
     var words = [ImageCollectionNode]()
     var ideas = [ImageCollectionNode]()
     
@@ -56,22 +66,43 @@ class ImageBucket {
     var _ignoreBagWords = Set<ImageCollectionNode>()
     var _ignoreBagIdeas = Set<ImageCollectionNode>()
     
-    func beginFreshPull(maximumGridCount: Int,
+    func beginFreshPull(maximumGridCountWords: Int,
+                        maximumGridCountIdeas: Int,
                         previouslyUsedWords: [ImageCollectionNode],
                         previouslyUsedIdeas: [ImageCollectionNode]) {
+        
+        /*
+        let wordCount = collectionWords.nodes.count
+        let ideaCount = collectionIdeas.nodes.count
+        let totalCount = wordCount + ideaCount
+        var ideaRatio: CGFloat = 1.0
+        if totalCount > 0 {
+            ideaRatio = CGFloat(ideaCount) / CGFloat(totalCount)
+        }
+        
+        let maximumGridCountWords = maximumGridCount
+        let maximumGridCountIdeas = 12 // TODO:
+        */
+        
         randomBucket.shuffle()
         //print("begin fresh pull: maximumGridCount:\(maximumGridCount) puw: \(previouslyUsedWords) pui: \(previouslyUsedIdeas)")
         
         for node in recentlySelectedBag {
             selectedBag.insert(node)
         }
+        for node in recentlyDeselectedBag {
+            selectedBag.remove(node)
+        }
+        
         recentlySelectedBag.removeAll(keepingCapacity: true)
+        recentlyDeselectedBag.removeAll(keepingCapacity: true)
         
         for node in selectedBag {
             ignoreBag.remove(node: node)
         }
         
         ignoreBag.notifyFreshPull()
+        evictBag.notifyFreshPull()
         
         for node in previouslyUsedWords {
             if !recentlySelectedBag.contains(node) && !selectedBag.contains(node) {
@@ -103,8 +134,11 @@ class ImageBucket {
         var new_pulledWords = [ImageCollectionNode]()
         for node in _pulledWords {
             if !previouslyUsedWordsSet.contains(node) && !selectedBag.contains(node) {
-                new_pulledWords.append(node)
-                _ignoreBagWords.insert(node)
+                
+                if !evictBag.evictSet.contains(node) {
+                    new_pulledWords.append(node)
+                    _ignoreBagWords.insert(node)
+                }
             }
         }
         
@@ -112,8 +146,10 @@ class ImageBucket {
         var new_pulledIdeas = [ImageCollectionNode]()
         for node in _pulledIdeas {
             if !previouslyUsedIdeasSet.contains(node) && !selectedBag.contains(node) {
-                new_pulledIdeas.append(node)
-                _ignoreBagIdeas.insert(node)
+                if !evictBag.evictSet.contains(node) {
+                    new_pulledIdeas.append(node)
+                    _ignoreBagIdeas.insert(node)
+                }
             }
         }
         
@@ -133,11 +169,11 @@ class ImageBucket {
             _ignoreBagIdeas.insert(node)
         }
         
-        let numberOfWordsToPull = maximumGridCount - (new_pulledWords.count + _selectedWords.count)
+        let numberOfWordsToPull = maximumGridCountWords - (new_pulledWords.count + _selectedWords.count)
         let fetchedWords = collectionWords.fetch(count: numberOfWordsToPull, ignoreBag: _ignoreBagWords)
         new_pulledWords.append(contentsOf: fetchedWords)
         
-        let numberOfIdeasToPull = maximumGridCount - (new_pulledIdeas.count + _selectedIdeas.count)
+        let numberOfIdeasToPull = maximumGridCountIdeas - (new_pulledIdeas.count + _selectedIdeas.count)
         let fetchedIdeas = collectionIdeas.fetch(count: numberOfIdeasToPull, ignoreBag: _ignoreBagIdeas)
         new_pulledIdeas.append(contentsOf: fetchedIdeas)
         
@@ -170,8 +206,17 @@ class ImageBucket {
         for node in _selectedIdeas { ideas.append(node) }
         for node in _pulledIdeas { ideas.append(node) }
         
-        //print("words count: \(words.count), sel: \(_selectedWords.count), pul: \(_pulledWords.count)")
-        //print("ideas count: \(ideas.count), sel: \(_selectedIdeas.count), pul: \(_pulledIdeas.count)")
+        print("words count: \(words.count), sel: \(_selectedWords.count), pul: \(_pulledWords.count)")
+        print("ideas count: \(ideas.count), sel: \(_selectedIdeas.count), pul: \(_pulledIdeas.count)")
+        
+        for node in words {
+            evictBag.add(node: node)
+        }
+        
+        for node in ideas {
+            evictBag.add(node: node)
+        }
+        
         
         //printArray(name: "words", arr: words)
         //printArray(name: "ideas", arr: ideas)
@@ -202,8 +247,31 @@ class ImageBucket {
         return dummyNodeWord
     }
     
-    
     func toggleSelected(node: ImageCollectionNode) {
+        if selectedBag.contains(node) {
+            if recentlySelectedBag.contains(node) {
+                recentlySelectedBag.remove(node)
+                recentlyDeselectedBag.insert(node)
+            } else if recentlyDeselectedBag.contains(node) {
+                recentlySelectedBag.insert(node)
+                recentlyDeselectedBag.remove(node)
+            } else {
+                recentlyDeselectedBag.insert(node)
+            }
+        } else {
+            
+            if recentlyDeselectedBag.contains(node) {
+                recentlyDeselectedBag.remove(node)
+                recentlySelectedBag.insert(node)
+            } else if recentlySelectedBag.contains(node) {
+                recentlyDeselectedBag.insert(node)
+                recentlySelectedBag.remove(node)
+            } else {
+                recentlySelectedBag.insert(node)
+            }
+        }
+        
+        /*
         if selectedBag.contains(node) {
             selectedBag.remove(node)
             recentlySelectedBag.remove(node)
@@ -213,9 +281,11 @@ class ImageBucket {
         } else {
             recentlySelectedBag.insert(node)
         }
+        */
     }
     
     func isSelected(node: ImageCollectionNode) -> Bool {
+        if recentlyDeselectedBag.contains(node) { return false }
         if selectedBag.contains(node) { return true }
         if recentlySelectedBag.contains(node) { return true }
         return false
@@ -257,22 +327,21 @@ class ImageBucket {
     
     func saveToState() -> ImageBucketState {
         let selectionState = ImageBucketSelectionState(selectedBag: selectedBag,
-                                                       recentlySelectedBag: recentlySelectedBag)
-        return ImageBucketState(//collectionWords: collectionWords,
-                                //collectionIdeas: collectionIdeas,
-                                randomBucket: randomBucket,
+                                                       recentlySelectedBag: recentlySelectedBag,
+                                                       recentlyDeselectedBag: recentlyDeselectedBag)
+        return ImageBucketState(randomBucket: randomBucket,
                                 ignoreBag: ignoreBag,
+                                evictBag: evictBag,
                                 selectionState: selectionState,
                                 words: words,
                                 ideas: ideas)
     }
     
     func loadFrom(state: ImageBucketState) {
-        //collectionWords.loadFrom(state: state.collectionWordsState)
-        //collectionIdeas.loadFrom(state: state.collectionIdeasState)
         
         randomBucket.loadFrom(state: state.randomBucketState)
         ignoreBag.loadFrom(state: state.ignoreBagState)
+        evictBag.loadFrom(state: state.evictBagState)
         
         words.removeAll(keepingCapacity: true)
         for fileName in state.wordsFileNames {
@@ -290,7 +359,8 @@ class ImageBucket {
     
     func saveSelectionToState() -> ImageBucketSelectionState {
         ImageBucketSelectionState(selectedBag: selectedBag,
-                                  recentlySelectedBag: recentlySelectedBag)
+                                  recentlySelectedBag: recentlySelectedBag,
+                                  recentlyDeselectedBag: recentlyDeselectedBag)
     }
     
     func loadSelectionFrom(state: ImageBucketSelectionState) {
@@ -305,6 +375,12 @@ class ImageBucket {
             let node = nodeFrom(fileName: fileName)
             recentlySelectedBag.insert(node)
         }
+        
+        recentlyDeselectedBag.removeAll(keepingCapacity: true)
+        for fileName in state.recentlyDeselectedBagContents {
+            let node = nodeFrom(fileName: fileName)
+            recentlyDeselectedBag.insert(node)
+        }
+        
     }
-    
 }

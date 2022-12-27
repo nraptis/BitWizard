@@ -10,7 +10,7 @@ import Foundation
 class ImageBucketIgnoreBag {
     
     //TODO: maxAge
-    static let maxAge = 1
+    static let maxAge = 4
     
     let imageBucket: ImageBucket
     let collectionWords: ImageCollectionWords
