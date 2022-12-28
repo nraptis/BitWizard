@@ -8,12 +8,9 @@
 import Foundation
 
 class PersistenceManager {
-    
     let app: ApplicationController
     required init(app: ApplicationController) {
         self.app = app
         
     }
-    
-    
 }

@@ -27,52 +27,40 @@ struct ConceptCell: View {
         self.mainContainerViewModel = mainContainerViewModel
         self.concept = concept
         self.selected = selected
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
+        self.x = x + 1.0
+        self.y = y + 1.0
+        self.width = width - 2.0
+        self.height = height - 2.0
     }
     
     var body: some View {
         ZStack {
-            
             Button {
                 mainContainerViewModel.toggleSelected(concept: concept)
             } label: {
                 ZStack {
-                    
                     Image(uiImage: concept.image)
                         .resizable()
                         .frame(width: width - 4.0, height: height - 4.0)
                         .clipShape(RoundedRectangle(cornerRadius: 8.0))
-                    
                     if selected {
-                        
                         RoundedRectangle(cornerRadius: 8.0)
-                            
                             .stroke(style: StrokeStyle(lineWidth: 2.0))
                             .frame(width: width - 3.0, height: height - 3.0)
                             .foregroundColor(Color.black.opacity(0.5))
-                        
                         RoundedRectangle(cornerRadius: 8.0)
-                        
                             .stroke(style: StrokeStyle(lineWidth: 2.0))
                             .frame(width: width - 2.0, height: height - 2.0)
                             .foregroundColor(Color("yarn"))
-                        
                     } else {
                         RoundedRectangle(cornerRadius: 8.0)
-                            
                             .stroke(style: StrokeStyle(lineWidth: 2.0))
                             .frame(width: width - 3.0, height: height - 3.0)
                             .foregroundColor(Color.black.opacity(0.5))
-                        
                         RoundedRectangle(cornerRadius: 8.0)
-                        
                             .stroke(style: StrokeStyle(lineWidth: 2.0))
                             .frame(width: width - 2.0, height: height - 2.0)
-                            .foregroundColor(Color("limestone"))
-                      
+                            .foregroundColor(.white)
                     }
                 }
                 .frame(width: width, height: height)
@@ -80,6 +68,7 @@ struct ConceptCell: View {
         }
         .frame(width: width, height: height)
         .offset(x: x, y: y)
+        .animation(nil, value: false)
     }
 }
 

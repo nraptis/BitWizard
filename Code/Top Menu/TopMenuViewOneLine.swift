@@ -20,12 +20,16 @@ struct TopMenuViewOneLine: View {
                                               height: ApplicationController.toolbarHeight)
                     
                     HStack(spacing: 0) {
-                        
                         TopMenuShowButtonChunk(mainContainerViewModel: mainContainerViewModel,
-                                               width: ApplicationController.toolbarHeight, height: ApplicationController.toolbarHeight, align: 0)
+                                               width: ApplicationController.toolbarHeight,
+                                               height: ApplicationController.toolbarHeight,
+                                               align: 0,
+                                               enabled: mainContainerViewModel.isSelectAllEnabled())
                         TopMenuHideButtonChunk(mainContainerViewModel: mainContainerViewModel,
-                                               width: ApplicationController.toolbarHeight, height: ApplicationController.toolbarHeight, align: 0)
-                        
+                                               width: ApplicationController.toolbarHeight,
+                                               height: ApplicationController.toolbarHeight,
+                                               align: 0,
+                                               enabled: mainContainerViewModel.isDeselectAllEnabled())
                     }
                     .frame(width: leftHalfWidth() - ApplicationController.toolbarHeight, height: ApplicationController.toolbarHeight)
                 }

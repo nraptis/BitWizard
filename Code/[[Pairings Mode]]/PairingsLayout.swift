@@ -18,13 +18,11 @@ class PairingsLayout: ConceptLayout {
         print("PairingsLayout.deinit()")
     }
     
-    func build(gridWidth: Int) -> ConceptLayoutBuildResponse {
+    func build(gridWidth: Int, showHideMode: ShowHideMode) -> ConceptLayoutBuildResponse {
         
         let result = ConceptLayoutBuildResponse()
         
-        
-        
-        beginFreshBuild()
+        beginFreshBuild(showHideMode: showHideMode)
         
         let centerBox = addCenterPiece(gridWidth: gridWidth)
         let centerBoxPadding = 12.0
@@ -33,30 +31,11 @@ class PairingsLayout: ConceptLayout {
                                        width: centerBox.width + centerBoxPadding + centerBoxPadding,
                                        height: centerBox.height + centerBoxPadding + centerBoxPadding)
         
-        rects.append(RectModel(id: baseID, x: centerBoxExpanded.origin.x, y: centerBoxExpanded.origin.y, width: centerBoxExpanded.size.width, height: centerBoxExpanded.size.height, color: UIColor.blue.withAlphaComponent(0.5)))
-        incrementBaseID()
-        
-        
         let topBox = CGRect(x: 0, y: 0, width: layoutWidth, height: centerBoxExpanded.minY)
-        
-        rects.append(RectModel(id: baseID, x: topBox.minX,
-                               y: topBox.minY,
-                               width: topBox.width,
-                               height: topBox.height,
-                               color: UIColor.orange.withAlphaComponent(0.5)))
-        incrementBaseID()
-        
         let bottomBox = CGRect(x: 0, y: centerBoxExpanded.maxY, width: layoutWidth, height: layoutHeight - centerBoxExpanded.maxY)
         
-        rects.append(RectModel(id: baseID, x: bottomBox.minX,
-                               y: bottomBox.minY,
-                               width: bottomBox.width,
-                               height: bottomBox.height,
-                               color: UIColor.cyan.withAlphaComponent(0.5)))
-        incrementBaseID()
-        
-        let stripsResultTop = placeStripsIn(rect: topBox, gridWidth: gridWidth)
-        let stripsResultBottom = placeStripsIn(rect: bottomBox, gridWidth: gridWidth)
+        let stripsResultTop = placeStripsIn(rect: topBox, gridWidth: gridWidth, alignment: .top)
+        let stripsResultBottom = placeStripsIn(rect: bottomBox, gridWidth: gridWidth, alignment: .bottom)
         
         let topBoxUsed = stripsResultTop.rect
         let bottomBoxUsed = stripsResultBottom.rect
@@ -69,26 +48,10 @@ class PairingsLayout: ConceptLayout {
                              width: (centerBoxExpanded.minX - topBottomLeft),
                              height: centerBoxExpanded.height)
         
-        rects.append(RectModel(id: baseID, x: leftBox.minX,
-                               y: leftBox.minY,
-                               width: leftBox.width,
-                               height: leftBox.height,
-                               color: UIColor.purple.withAlphaComponent(0.5)))
-        incrementBaseID()
-        
-        
         let rightBox = CGRect(x: centerBoxExpanded.maxX,
                               y: centerBoxExpanded.minY,
                               width: (topBottomRight - centerBoxExpanded.maxX),
                               height: centerBoxExpanded.height)
-        
-        rects.append(RectModel(id: baseID, x: rightBox.minX,
-                               y: rightBox.minY,
-                               width: rightBox.width,
-                               height: rightBox.height,
-                               color: UIColor.white.withAlphaComponent(0.5)))
-        incrementBaseID()
-        
         
         let smallSize = Int(CGFloat(findLargestAppropriateColumnWidthFor(gridWidth: gridWidth)) * 0.25)
         if (leftBox.width > CGFloat(smallSize)) || (rightBox.width > CGFloat(smallSize)) {
@@ -105,13 +68,11 @@ class PairingsLayout: ConceptLayout {
                     placementCount = checkPlacementCount
                 }
             }
-            
-            placeStripsIn(rect: leftBox, gridWidth: placementCount)
-            placeStripsIn(rect: rightBox, gridWidth: placementCount)
-            
+            placeStripsIn(rect: leftBox, gridWidth: placementCount, alignment: .bottom)
+            placeStripsIn(rect: rightBox, gridWidth: placementCount, alignment: .top)
         }
         
-        addConceptsToEachStrip()
+        addConceptsToEachStrip(showHideMode: showHideMode)
         
         for concept in concepts {
             result.add(node: concept.node)
@@ -145,8 +106,5 @@ class PairingsLayout: ConceptLayout {
         incrementBaseID()
         concepts.append(concept)
         return fitBox
-        
-        
-        
     }
 }

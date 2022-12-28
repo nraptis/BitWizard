@@ -12,13 +12,13 @@ class MainContainerViewModel: ObservableObject {
     @Published var appMode: AppMode = .grid
     @Published var showHideMode: ShowHideMode = .showAll
     
-    private static let maximumGridCountWords = 110
-    private static let maximumGridCountIdeas = 110
+    static let maximumGridCountWords = 24
+    static let maximumGridCountIdeas = 12
     
-    private(set) var gridWidth = 1
+    private(set) var gridWidth = 3
     
     private var minGridWidth = 1
-    private var maxGridWidth = ApplicationController.isIpad() ? 16 : 8
+    private var maxGridWidth = ApplicationController.isIpad() ? 7 : 5
     
     private let cache = ImageCache()
     
@@ -59,14 +59,10 @@ class MainContainerViewModel: ObservableObject {
         self.collectionWords.wake()
         self.collectionIdeas.wake()
         
-        //shuffle()
-        //imageBucket.collectionWords.shuffle()
         imageBucket.beginFreshPull(maximumGridCountWords: Self.maximumGridCountWords,
                                    maximumGridCountIdeas: Self.maximumGridCountIdeas,
                                    previouslyUsedWords: [],
                                    previouslyUsedIdeas: [])
-        
-        //findAverageSizes()
     }
     
     open func findAverageSizes() {
@@ -167,9 +163,6 @@ class MainContainerViewModel: ObservableObject {
             }
         }
         
-        //beginFreshPull()
-        
-        
         //TODO: maximumGridCount
         imageBucket.beginFreshPull(maximumGridCountWords: Self.maximumGridCountWords,
                                    maximumGridCountIdeas: Self.maximumGridCountIdeas,
@@ -189,27 +182,55 @@ class MainContainerViewModel: ObservableObject {
         case .grid:
             if let gridViewModel = gridViewModel {
                 if gridViewModel.layout.layoutWidth > gridViewModel.layout.layoutHeight {
-                    gridViewModel.build(gridWidth: gridWidth + 2)
+                    gridViewModel.build(gridWidth: gridWidth + 2, showHideMode: showHideMode)
                 } else {
-                    gridViewModel.build(gridWidth: gridWidth)
+                    gridViewModel.build(gridWidth: gridWidth, showHideMode: showHideMode)
                 }
             }
         case .centralIdea:
             if let centralConceptViewModel = centralConceptViewModel {
                 if centralConceptViewModel.layout.layoutWidth > centralConceptViewModel.layout.layoutHeight {
-                    centralConceptViewModel.build(gridWidth: gridWidth + 2)
+                    centralConceptViewModel.build(gridWidth: gridWidth + 2, showHideMode: showHideMode)
                 } else {
-                    centralConceptViewModel.build(gridWidth: gridWidth)
+                    centralConceptViewModel.build(gridWidth: gridWidth, showHideMode: showHideMode)
                 }
             }
         case .pairings:
-            break
+            if let pairingsViewModel = pairingsViewModel {
+                if pairingsViewModel.layout.layoutWidth > pairingsViewModel.layout.layoutHeight {
+                    pairingsViewModel.build(gridWidth: gridWidth + 2, showHideMode: showHideMode)
+                } else {
+                    pairingsViewModel.build(gridWidth: gridWidth, showHideMode: showHideMode)
+                }
+            }
         }
     }
     
     func handleMemoryWarning() {
         imageBucket.handleMemoryWarning()
         cache.handleMemoryWarning()
+    }
+    
+    func getAllVisibleImageCollectionNodes() -> [ImageCollectionNode] {
+        var result = [ImageCollectionNode]()
+        switch appMode {
+        case .grid:
+            if let viewModel = gridViewModel {
+                let nodes = viewModel.layout.getAllVisibleImageCollectionNodes()
+                result.append(contentsOf: nodes)
+            }
+        case .centralIdea:
+            if let viewModel = centralConceptViewModel {
+                let nodes = viewModel.layout.getAllVisibleImageCollectionNodes()
+                result.append(contentsOf: nodes)
+            }
+        case .pairings:
+            if let viewModel = pairingsViewModel {
+                let nodes = viewModel.layout.getAllVisibleImageCollectionNodes()
+                result.append(contentsOf: nodes)
+            }
+        }
+        return result
     }
     
     var centralConceptViewModel: CentralConceptViewModel?
@@ -220,7 +241,6 @@ class MainContainerViewModel: ObservableObject {
     func centralConceptViewModelDispose() {
         centralConceptViewModel = nil
     }
-    
     
     var gridViewModel: GridViewModel?
     func gridViewModelSpawn() {
@@ -241,12 +261,30 @@ class MainContainerViewModel: ObservableObject {
     }
     
     func change(showHideMode: ShowHideMode, fromHistory: Bool) {
-        //
+        if !fromHistory {
+            if _firstShuffle {
+                _firstShuffle = false
+                saveHistoryState()
+            }
+            
+            let previousShowHideMode = self.showHideMode
+            self.showHideMode = showHideMode
+            
+            if (previousShowHideMode == .hideSelectedUponSelect) ||
+                (showHideMode == .hideSelectedUponSelect) ||
+                (showHideMode == .showAll) {
+                imageBucket.mergeRecentlySelectedAndDeselected()
+                build()
+            }
+            
+            saveHistoryState()
+        } else {
+            self.showHideMode = showHideMode
+        }
     }
     
     func change(appMode: AppMode, fromHistory: Bool) {
         
-        //TODO: Save history here?
         if !fromHistory {
             if _firstShuffle {
                 _firstShuffle = false
@@ -276,10 +314,8 @@ class MainContainerViewModel: ObservableObject {
         }
     }
     
-    
     func selectLeftModeSegment() {
         if appMode == .grid { return }
-        
         DispatchQueue.main.async {
             self.change(appMode: .grid, fromHistory: false)
         }
@@ -287,7 +323,6 @@ class MainContainerViewModel: ObservableObject {
     
     func selectMiddleModeSegment() {
         if appMode == .centralIdea { return }
-        
         DispatchQueue.main.async {
             self.change(appMode: .centralIdea, fromHistory: false)
         }
@@ -295,7 +330,6 @@ class MainContainerViewModel: ObservableObject {
     
     func selectRightModeSegment() {
         if appMode == .pairings { return }
-        
         DispatchQueue.main.async {
             self.change(appMode: .pairings, fromHistory: false)
         }
@@ -328,31 +362,24 @@ class MainContainerViewModel: ObservableObject {
         }
     }
     
-    func isUndoEnabled() -> Bool {
-        //print("can undo: \(historyController.canUndo()) count: \(historyController.historyStack.count) index: \(historyController.historyIndex)")
-        return historyController.canUndo()
-    }
-    
-    func isRedoEnabled() -> Bool {
-        //print("can redo: \(historyController.canRedo()) count: \(historyController.historyStack.count) index: \(historyController.historyIndex)")
-        return historyController.canRedo()
-    }
-    
     func selectLeftShowHideSegment() {
+        if showHideMode == .showAll { return }
         DispatchQueue.main.async {
-            self.showHideMode = .showAll
+            self.change(showHideMode: .showAll, fromHistory: false)
         }
     }
     
     func selectMiddleShowHideSegment() {
+        if showHideMode == .hideSelectedUponShuffle { return }
         DispatchQueue.main.async {
-            self.showHideMode = .hideSelectedUponShuffle
+            self.change(showHideMode: .hideSelectedUponShuffle, fromHistory: false)
         }
     }
     
     func selectRightShowHideSegment() {
+        if showHideMode == .hideSelectedUponSelect { return }
         DispatchQueue.main.async {
-            self.showHideMode = .hideSelectedUponSelect
+            self.change(showHideMode: .hideSelectedUponSelect, fromHistory: false)
         }
     }
     
@@ -382,8 +409,6 @@ class MainContainerViewModel: ObservableObject {
             return false
         }
     }
-    
-    
     
     func isLeftGridSizeStepperEnabled() -> Bool {
         gridWidth > minGridWidth
@@ -432,6 +457,11 @@ class MainContainerViewModel: ObservableObject {
         
         imageBucket.toggleSelected(node: concept.node)
         
+        if showHideMode == .hideSelectedUponSelect {
+            imageBucket.mergeRecentlySelectedAndDeselected()
+            build()
+        }
+        
         saveHistoryState()
         
         DispatchQueue.main.async { self.objectWillChange.send() }
@@ -439,6 +469,89 @@ class MainContainerViewModel: ObservableObject {
     
     func isSelected(concept: ConceptModel) -> Bool {
         imageBucket.isSelected(node: concept.node)
+    }
+    
+    func isSelectAllEnabled() -> Bool {
+        let nodes = getAllVisibleImageCollectionNodes()
+        var result = false
+        for node in nodes {
+            if !imageBucket.isSelected(node: node) {
+                result = true
+            }
+        }
+        return result
+    }
+    
+    func isDeselectAllEnabled() -> Bool {
+        let nodes = getAllVisibleImageCollectionNodes()
+        var result = false
+        for node in nodes {
+            if imageBucket.isSelected(node: node) {
+                result = true
+            }
+        }
+        return result
+    }
+    
+    func selectAllIntent() {
+        if _firstShuffle {
+            _firstShuffle = false
+            saveHistoryState()
+        }
+        
+        let nodes = getAllVisibleImageCollectionNodes()
+        for node in nodes {
+            imageBucket.forceSelected(node: node)
+        }
+        
+        if showHideMode == .hideSelectedUponSelect {
+            imageBucket.mergeRecentlySelectedAndDeselected()
+            build()
+        }
+        
+        saveHistoryState()
+        DispatchQueue.main.async { self.objectWillChange.send() }
+    }
+    
+    func deselectAllIntent() {
+        if _firstShuffle {
+            _firstShuffle = false
+            saveHistoryState()
+        }
+        
+        let nodes = getAllVisibleImageCollectionNodes()
+        for node in nodes {
+            imageBucket.forceDeselected(node: node)
+        }
+        for node in imageBucket.selectedBag {
+            imageBucket.forceDeselected(node: node)
+        }
+        
+        if showHideMode == .hideSelectedUponSelect {
+            imageBucket.mergeRecentlySelectedAndDeselected()
+            build()
+        }
+        
+        saveHistoryState()
+        DispatchQueue.main.async { self.objectWillChange.send() }
+    }
+    
+    func isUndoEnabled() -> Bool {
+        return historyController.canUndo()
+    }
+    
+    func isRedoEnabled() -> Bool {
+        return historyController.canRedo()
+    }
+    
+    func undoIntent() {
+        historyController.undo()
+        DispatchQueue.main.async { self.objectWillChange.send() }
+    }
+    
+    func redoIntent() {
+        historyController.redo()
+        DispatchQueue.main.async { self.objectWillChange.send() }
     }
     
     func applyHistoryState(_ state: HistoryState) {
@@ -468,14 +581,6 @@ class MainContainerViewModel: ObservableObject {
         let imageBucketState = state.imageBucketState
         imageBucket.loadFrom(state: imageBucketState)
         build()
-        
-        /*
-        if let selectionState = state as? HistoryStateSelection {
-            let imageBucketSelectionState = selectionState.imageBucketSelectionState
-            imageBucket.loadSelectionFrom(state: imageBucketSelectionState)
-            DispatchQueue.main.async { self.objectWillChange.send() }
-        }
-        */
     }
     
     func saveHistoryState() {
@@ -505,15 +610,4 @@ class MainContainerViewModel: ObservableObject {
         
         historyController.historyAdd(state: historyState)
     }
-    
-    func undoIntent() {
-        historyController.undo()
-        DispatchQueue.main.async { self.objectWillChange.send() }
-    }
-    
-    func redoIntent() {
-        historyController.redo()
-        DispatchQueue.main.async { self.objectWillChange.send() }
-    }
-    
 }

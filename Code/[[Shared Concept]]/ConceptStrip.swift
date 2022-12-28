@@ -7,6 +7,12 @@
 
 import Foundation
 
+enum ConceptStripAlignment {
+    case top
+    case center
+    case bottom
+}
+
 class ConceptStrip {
     
     //Idea: Cutoff Factor Lo, Cutoff Factor Hi
@@ -20,6 +26,7 @@ class ConceptStrip {
     let y: CGFloat
     let width: CGFloat
     let height: CGFloat
+    let alignment: ConceptStripAlignment
     var capCutoffHeightMin: CGFloat
     var capCutoffHeightMax: CGFloat
     
@@ -29,11 +36,13 @@ class ConceptStrip {
     init(x: CGFloat,
          y: CGFloat,
          width: CGFloat,
-         height: CGFloat) {
+         height: CGFloat,
+         alignment: ConceptStripAlignment) {
         self.x = x
         self.y = y
         self.width = width
         self.height = height
+        self.alignment = alignment
         self.capCutoffHeightMin = height - (Self.capCutoffHeightFactorMin * width)
         self.capCutoffHeightMax = height - (Self.capCutoffHeightFactorMax * width)
     }
@@ -93,17 +102,37 @@ class ConceptStrip {
         conceptsHeight += concept.height
     }
     
-    func layoutConceptsFromTopDown(bucket: RandomBucket) {
-        let x: CGFloat = x
-        var y: CGFloat = y
+    func layoutConcepts(bucket: RandomBucket) {
+        var totalHeight: CGFloat = 0.0
         for concept in concepts {
-            concept.x = x
-            concept.y = y
-            y += concept.height
+            totalHeight += concept.height
         }
         
+        for _ in 0..<3 where totalHeight < height {
+            for concept in concepts where totalHeight < height {
+                concept.height += 1.0
+                totalHeight += 1.0
+            }
+        }
+        
+        let _x: CGFloat = x
+        var _y: CGFloat = y
+        
+        switch alignment {
+        case .center:
+            _y = CGFloat(Int((y + height * 0.5) - (totalHeight * 0.5) + 0.5))
+        case .bottom:
+            _y = height - CGFloat(totalHeight)
+        default:
+            break
+        }
+        
+        for concept in concepts {
+            concept.x = _x
+            concept.y = _y
+            _y += concept.height
+        }
     }
-    
 }
 
 

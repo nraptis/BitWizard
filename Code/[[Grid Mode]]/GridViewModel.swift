@@ -34,7 +34,7 @@ class GridViewModel: ObservableObject {
         self.mainContainerViewModel = mainContainerViewModel
     }
     
-    func register(layoutWidth: CGFloat, layoutHeight: CGFloat, gridWidth: Int) {
+    func register(layoutWidth: CGFloat, layoutHeight: CGFloat, gridWidth: Int, showHideMode: ShowHideMode) {
         
         let diff1 = abs(layoutWidth - layout.layoutWidth)
         let diff2 = abs(layoutHeight - layout.layoutHeight)
@@ -48,7 +48,7 @@ class GridViewModel: ObservableObject {
                         layoutHeight: layoutHeight,
                         gridWidth: gridWidth)
         
-        let buildResponse = layout.build(gridWidth: gridWidth)
+        let buildResponse = layout.build(gridWidth: gridWidth, showHideMode: showHideMode)
         
         usedWords = buildResponse.usedWords
         usedIdeas = buildResponse.usedIdeas
@@ -63,20 +63,14 @@ class GridViewModel: ObservableObject {
         layout.randomBucketStored.shuffle()
     }
     
-    func build(gridWidth: Int) {
-        
-        //layout.randomBucket.set(randomBucket: layout.randomBucketStored)
-        
-        let buildResponse = layout.build(gridWidth: gridWidth)
-        
+    func build(gridWidth: Int, showHideMode: ShowHideMode) {
+        let buildResponse = layout.build(gridWidth: gridWidth, showHideMode: showHideMode)
         usedWords = buildResponse.usedWords
         usedIdeas = buildResponse.usedIdeas
-        
         DispatchQueue.main.async {
             self.mainContainerViewModel.objectWillChange.send()
             self.objectWillChange.send()
         }
-        
     }
     
     func saveToState() -> GridState {

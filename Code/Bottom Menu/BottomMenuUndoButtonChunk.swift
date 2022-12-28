@@ -79,7 +79,7 @@ struct BottomMenuUndoButtonChunk: View {
                      }
                      .frame(width: height - (paddingLeft + paddingRight), height: height - (paddingTop + paddingBottom))
                      .background(RoundedRectangle(cornerRadius: 12.0).stroke(style: StrokeStyle(lineWidth: 2)).foregroundColor(Color("limestone")))
-                     .disabled(true)
+                     .allowsHitTesting(false)
                     
                 }
                 .frame(width: height - (paddingLeft + paddingRight), height: height - (paddingTop + paddingBottom))

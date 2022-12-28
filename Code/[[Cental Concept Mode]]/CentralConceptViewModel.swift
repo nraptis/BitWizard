@@ -28,14 +28,13 @@ class CentralConceptViewModel: ObservableObject {
         CentralConceptLayout(imageBucket: mainContainerViewModel.imageBucket)
     }()
     
-    
     required init(app: ApplicationController, imageBucket: ImageBucket, mainContainerViewModel: MainContainerViewModel) {
         self.app = app
         self.imageBucket = imageBucket
         self.mainContainerViewModel = mainContainerViewModel
     }
     
-    func register(layoutWidth: CGFloat, layoutHeight: CGFloat, gridWidth: Int) {
+    func register(layoutWidth: CGFloat, layoutHeight: CGFloat, gridWidth: Int, showHideMode: ShowHideMode) {
         
         let diff1 = abs(layoutWidth - layout.layoutWidth)
         let diff2 = abs(layoutHeight - layout.layoutHeight)
@@ -49,7 +48,7 @@ class CentralConceptViewModel: ObservableObject {
                         layoutHeight: layoutHeight,
                         gridWidth: gridWidth)
         
-        let buildResponse = layout.build(gridWidth: gridWidth)
+        let buildResponse = layout.build(gridWidth: gridWidth, showHideMode: showHideMode)
         
         usedWords = buildResponse.usedWords
         usedIdeas = buildResponse.usedIdeas
@@ -64,9 +63,9 @@ class CentralConceptViewModel: ObservableObject {
         layout.randomBucketStored.shuffle()
     }
     
-    func build(gridWidth: Int) {
+    func build(gridWidth: Int, showHideMode: ShowHideMode) {
         
-        let buildResponse = layout.build(gridWidth: gridWidth)
+        let buildResponse = layout.build(gridWidth: gridWidth, showHideMode: showHideMode)
         
         usedWords = buildResponse.usedWords
         usedIdeas = buildResponse.usedIdeas

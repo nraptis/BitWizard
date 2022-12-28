@@ -12,7 +12,7 @@ class ConceptModel {
     var x: CGFloat
     var y: CGFloat
     let width: CGFloat
-    let height: CGFloat
+    var height: CGFloat
     let image: UIImage
     let node: ImageCollectionNode
     let rect: CGRect

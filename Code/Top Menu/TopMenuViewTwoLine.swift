@@ -24,7 +24,10 @@ struct TopMenuViewTwoLine: View {
                                         height: ApplicationController.toolbarHeight)
                 
                 TopMenuShowButtonChunk(mainContainerViewModel: mainContainerViewModel,
-                                       width: topRightHalfWidth(), height: ApplicationController.toolbarHeight, align: 1)
+                                       width: topRightHalfWidth(),
+                                       height: ApplicationController.toolbarHeight,
+                                       align: 1,
+                                       enabled: mainContainerViewModel.isSelectAllEnabled())
                 
                 
             }
@@ -42,12 +45,12 @@ struct TopMenuViewTwoLine: View {
                     
                 }
                 .frame(width: topLeftHalfWidth(), height: ApplicationController.toolbarHeight)
-                
                 TopMenuShowHideSegmentChunkCenterAligned(mainContainerViewModel: mainContainerViewModel, width: topCenterWidth(), height: ApplicationController.toolbarHeight)
-                
-                
                 TopMenuHideButtonChunk(mainContainerViewModel: mainContainerViewModel,
-                                       width: topRightHalfWidth(), height: ApplicationController.toolbarHeight, align: 1)
+                                       width: topRightHalfWidth(),
+                                       height: ApplicationController.toolbarHeight,
+                                       align: 1,
+                                       enabled: mainContainerViewModel.isDeselectAllEnabled())
                 
             }
             .frame(width: width, height: ApplicationController.toolbarHeight)

@@ -34,7 +34,7 @@ class PairingsViewModel: ObservableObject {
         self.mainContainerViewModel = mainContainerViewModel
     }
     
-    func register(layoutWidth: CGFloat, layoutHeight: CGFloat, gridWidth: Int) {
+    func register(layoutWidth: CGFloat, layoutHeight: CGFloat, gridWidth: Int, showHideMode: ShowHideMode) {
         
         let diff1 = abs(layoutWidth - layout.layoutWidth)
         let diff2 = abs(layoutHeight - layout.layoutHeight)
@@ -48,7 +48,7 @@ class PairingsViewModel: ObservableObject {
                         layoutHeight: layoutHeight,
                         gridWidth: gridWidth)
         
-        let buildResponse = layout.build(gridWidth: gridWidth)
+        let buildResponse = layout.build(gridWidth: gridWidth, showHideMode: showHideMode)
         
         usedWords = buildResponse.usedWords
         usedIdeas = buildResponse.usedIdeas
@@ -63,9 +63,9 @@ class PairingsViewModel: ObservableObject {
         layout.randomBucketStored.shuffle()
     }
     
-    func build(gridWidth: Int) {
+    func build(gridWidth: Int, showHideMode: ShowHideMode) {
         
-        let buildResponse = layout.build(gridWidth: gridWidth)
+        let buildResponse = layout.build(gridWidth: gridWidth, showHideMode: showHideMode)
         
         usedWords = buildResponse.usedWords
         usedIdeas = buildResponse.usedIdeas
@@ -74,7 +74,6 @@ class PairingsViewModel: ObservableObject {
             self.mainContainerViewModel.objectWillChange.send()
             self.objectWillChange.send()
         }
-        
     }
     
     func saveToState() -> PairingsState {

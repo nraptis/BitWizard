@@ -18,45 +18,33 @@ class CentralConceptLayout: ConceptLayout {
         print("CentralConceptLayout.deinit()")
     }
     
-    func build(gridWidth: Int) -> ConceptLayoutBuildResponse {
+    func build(gridWidth: Int, showHideMode: ShowHideMode) -> ConceptLayoutBuildResponse {
         
         let result = ConceptLayoutBuildResponse()
         
-        
-        
-        beginFreshBuild()
+        beginFreshBuild(showHideMode: showHideMode)
         
         let centerBox = addCenterPiece(gridWidth: gridWidth)
-        let centerBoxPadding = 12.0
+        let centerBoxPadding = ApplicationController.isIpad() ? 8.0 : 5.0
         let centerBoxExpanded = CGRect(x: centerBox.minX - centerBoxPadding,
                                        y: centerBox.minY - centerBoxPadding,
                                        width: centerBox.width + centerBoxPadding + centerBoxPadding,
                                        height: centerBox.height + centerBoxPadding + centerBoxPadding)
+        let topBox = CGRect(x: 0,
+                            y: 0,
+                            width: layoutWidth,
+                            height: centerBoxExpanded.minY)
+        let bottomBox = CGRect(x: 0,
+                               y: centerBoxExpanded.maxY,
+                               width: layoutWidth,
+                               height: layoutHeight - centerBoxExpanded.maxY)
         
-        rects.append(RectModel(id: baseID, x: centerBoxExpanded.origin.x, y: centerBoxExpanded.origin.y, width: centerBoxExpanded.size.width, height: centerBoxExpanded.size.height, color: UIColor.blue.withAlphaComponent(0.5)))
-        incrementBaseID()
-        
-        
-        let topBox = CGRect(x: 0, y: 0, width: layoutWidth, height: centerBoxExpanded.minY)
-        
-        rects.append(RectModel(id: baseID, x: topBox.minX,
-                               y: topBox.minY,
-                               width: topBox.width,
-                               height: topBox.height,
-                               color: UIColor.orange.withAlphaComponent(0.5)))
-        incrementBaseID()
-        
-        let bottomBox = CGRect(x: 0, y: centerBoxExpanded.maxY, width: layoutWidth, height: layoutHeight - centerBoxExpanded.maxY)
-        
-        rects.append(RectModel(id: baseID, x: bottomBox.minX,
-                               y: bottomBox.minY,
-                               width: bottomBox.width,
-                               height: bottomBox.height,
-                               color: UIColor.cyan.withAlphaComponent(0.5)))
-        incrementBaseID()
-        
-        let stripsResultTop = placeStripsIn(rect: topBox, gridWidth: gridWidth)
-        let stripsResultBottom = placeStripsIn(rect: bottomBox, gridWidth: gridWidth)
+        let stripsResultTop = placeStripsIn(rect: topBox,
+                                            gridWidth: gridWidth,
+                                            alignment: .bottom)
+        let stripsResultBottom = placeStripsIn(rect: bottomBox,
+                                               gridWidth: gridWidth,
+                                               alignment: .top)
         
         let topBoxUsed = stripsResultTop.rect
         let bottomBoxUsed = stripsResultBottom.rect
@@ -68,28 +56,10 @@ class CentralConceptLayout: ConceptLayout {
                              y: centerBoxExpanded.minY,
                              width: (centerBoxExpanded.minX - topBottomLeft),
                              height: centerBoxExpanded.height)
-        
-        rects.append(RectModel(id: baseID, x: leftBox.minX,
-                               y: leftBox.minY,
-                               width: leftBox.width,
-                               height: leftBox.height,
-                               color: UIColor.purple.withAlphaComponent(0.5)))
-        incrementBaseID()
-        
-        
         let rightBox = CGRect(x: centerBoxExpanded.maxX,
                               y: centerBoxExpanded.minY,
                               width: (topBottomRight - centerBoxExpanded.maxX),
                               height: centerBoxExpanded.height)
-        
-        rects.append(RectModel(id: baseID, x: rightBox.minX,
-                               y: rightBox.minY,
-                               width: rightBox.width,
-                               height: rightBox.height,
-                               color: UIColor.white.withAlphaComponent(0.5)))
-        incrementBaseID()
-        
-        
         let smallSize = Int(CGFloat(findLargestAppropriateColumnWidthFor(gridWidth: gridWidth)) * 0.25)
         if (leftBox.width > CGFloat(smallSize)) || (rightBox.width > CGFloat(smallSize)) {
             let sideWidth = min(leftBox.width, rightBox.width)
@@ -105,13 +75,15 @@ class CentralConceptLayout: ConceptLayout {
                     placementCount = checkPlacementCount
                 }
             }
-            
-            placeStripsIn(rect: leftBox, gridWidth: placementCount)
-            placeStripsIn(rect: rightBox, gridWidth: placementCount)
-            
+            placeStripsIn(rect: leftBox,
+                          gridWidth: placementCount,
+                          alignment: .center)
+            placeStripsIn(rect: rightBox,
+                          gridWidth: placementCount,
+                          alignment: .center)
         }
         
-        addConceptsToEachStrip()
+        addConceptsToEachStrip(showHideMode: showHideMode)
         
         for concept in concepts {
             result.add(node: concept.node)
@@ -122,7 +94,7 @@ class CentralConceptLayout: ConceptLayout {
     
     private func addCenterPiece(gridWidth: Int) -> CGRect {
         
-        var fitBox = CGRect(x: centerX - 60.0, y: centerY - 60.0, width: 120.0, height: 120.0)
+        let fitBox = CGRect(x: centerX - 60.0, y: centerY - 60.0, width: 120.0, height: 120.0)
         
         var _picked: ImageCollectionNode?
         if let idea = dequeueIdea() {
@@ -136,17 +108,34 @@ class CentralConceptLayout: ConceptLayout {
             return fitBox
         }
         
-        let frame = fitBox
-        if gridWidth <= 1 {
-            let big = findLargestAppropriateColumnWidthForSizeOne()
+        var sizeH = findLargestAppropriateColumnWidthFor(gridWidth: gridWidth)
+        if ApplicationController.isIpad() {
+            sizeH += 10
+        } else {
+            sizeH += 6
         }
+        
+        var sizeV = sizeH
+        let maxSizeV = Int(layoutHeight * 0.333 + 0.5)
+        if sizeV > maxSizeV {
+            sizeV = maxSizeV
+        }
+        
+        let fitSize = CGSize(width: CGFloat(sizeH),
+                             height: CGFloat(sizeV))
+        let nodeSize = CGSize(width: node.width,
+                              height: node.height)
+        
+        let size = fitSize.getAspectFit(nodeSize)
+        let frame = CGRect(x: round(layoutWidth * 0.5 - size.width * 0.5),
+                        
+                           y: round(layoutHeight * 0.5 - size.height * 0.5),
+                           width: round(CGFloat(size.width)),
+                           height: round(CGFloat(size.height)))
         
         let concept = ConceptModel(id: baseID, x: frame.minX, y: frame.minY, width: frame.width, height: frame.height, image: node.image, node: node)
         incrementBaseID()
         concepts.append(concept)
-        return fitBox
-        
-        
-        
+        return frame
     }
 }

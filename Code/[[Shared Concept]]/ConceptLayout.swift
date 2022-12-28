@@ -209,6 +209,14 @@ class ConceptLayout {
         }
     }
     
+    func getAllVisibleImageCollectionNodes() -> [ImageCollectionNode] {
+        var result = [ImageCollectionNode]()
+        for concept in concepts {
+            result.append(concept.node)
+        }
+        return result
+    }
+    
     func randomNextWord() -> Bool {
         let wordCount = imageBucket.collectionWords.nodes.count
         let ideaCount = imageBucket.collectionIdeas.nodes.count
@@ -272,17 +280,14 @@ class ConceptLayout {
     }
     
     @discardableResult
-    func addStrip(x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat) -> ConceptStrip {
-        let result = ConceptStrip(x: x, y: y, width: width, height: height)
-        /*
-        rects.append(RectModel(id: baseID, x: x, y: y, width: width, height: height, color: UIColor.green.withAlphaComponent(0.5)))
-        incrementBaseID()
-        */
+    func addStrip(x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat, alignment: ConceptStripAlignment) -> ConceptStrip {
+        let result = ConceptStrip(x: x, y: y, width: width, height: height, alignment: alignment)
+        strips.append(result)
         return result
     }
     
     @discardableResult
-    func placeStripsIn(rect: CGRect, gridWidth: Int) -> StripPlacementResult {
+    func placeStripsIn(rect: CGRect, gridWidth: Int, alignment: ConceptStripAlignment) -> StripPlacementResult {
         
         let result = StripPlacementResult()
         result.rect = rect
@@ -310,9 +315,9 @@ class ConceptLayout {
             let strip = addStrip(x: CGFloat(x),
                                  y: rect.minY,
                                  width: CGFloat(widthArray[index]),
-                                 height: rect.height)
+                                 height: rect.height,
+                                 alignment: alignment)
             result.strips.append(strip)
-            strips.append(strip)
             x += widthArray[index]
         }
         
@@ -416,7 +421,7 @@ class ConceptLayout {
         print("layout (\(name)) u-i: \(unselectedIdeas)")
     }
     
-    func beginFreshBuild() {
+    func beginFreshBuild(showHideMode: ShowHideMode) {
         
         randomBucket.set(randomBucket: randomBucketStored)
         
@@ -428,8 +433,11 @@ class ConceptLayout {
         _unselectedWords.removeAll(keepingCapacity: true)
         for node in imageBucket.words {
             node.tempUsed = false
+            
             if imageBucket.isSelectedNotRecently(node: node) {
-                _selectedWords.append(node)
+                if showHideMode == .showAll {
+                    _selectedWords.append(node)
+                }
             } else {
                 _unselectedWords.append(node)
             }
@@ -446,7 +454,9 @@ class ConceptLayout {
         for node in imageBucket.ideas {
             node.tempUsed = false
             if imageBucket.isSelectedNotRecently(node: node) {
-                _selectedIdeas.append(node)
+                if showHideMode == .showAll {
+                    _selectedIdeas.append(node)
+                }
             } else {
                 _unselectedIdeas.append(node)
             }
@@ -557,11 +567,12 @@ class ConceptLayout {
         return result
     }
     
-    func addConceptsToEachStrip() {
+    func addConceptsToEachStrip(showHideMode: ShowHideMode) {
         
         var reloop = true
         while reloop {
             reloop = false
+            
             if !reloop {
                 
                 var indices = [Int]()
@@ -618,7 +629,7 @@ class ConceptLayout {
         }
         
         for strip in strips {
-            strip.layoutConceptsFromTopDown(bucket: randomBucket)
+            strip.layoutConcepts(bucket: randomBucket)
             for concept in strip.concepts {
                 concepts.append(concept)
                 concept.id = baseID
@@ -1407,6 +1418,12 @@ extension ConceptLayout {
         //    very slow, but with the stop-conditions, in practical
         //    use, it ends up being lightning quick.
         capOffProceedWithMatches(strip: strip, stripLayoutNodeType: stripLayoutNodeType)
+        
+        
+        //9.) Maybe we couldn't cap off with the size we wanted,
+        //    we should still pick the best available match and
+        //    use that to cap off the strip.
+        capOffEmergencyFill(strip: strip)
     }
     
     func capOffStir() {
@@ -1752,5 +1769,154 @@ extension ConceptLayout {
             }
         }
         return false
+    }
+    
+    func capOffEmergencyFill(strip: ConceptStrip) {
+        let target = Int((strip.height - strip.conceptsHeight) + 0.5)
+        
+        var bestMatchWith1 = 0
+        var bestNode1With1: ImageCollectionNode?
+        for heightBucket in capoffHeightBucketList {
+            if heightBucket.height <= target, heightBucket.height > bestMatchWith1 {
+                let arr1 = heightBucket.nodesSelected.count > 0 ? heightBucket.nodesSelected : heightBucket.nodesUnselected
+                for node1 in arr1 {
+                    if !node1.tempUsed {
+                        bestMatchWith1 = heightBucket.height
+                        bestNode1With1 = node1
+                    }
+                }
+            }
+        }
+        
+        guard let bestNode1With1 = bestNode1With1 else {
+            return
+        }
+        
+        var bestMatchWith2 = 0
+        var bestNode1With2: ImageCollectionNode?
+        var bestNode2With2: ImageCollectionNode?
+        
+        for twoSumBucket in capoffTwoSumBucketList {
+            if twoSumBucket.height <= target, twoSumBucket.height > bestMatchWith2 {
+                for pair in twoSumBucket.pairs {
+                    let arr1 = pair.heightBucket1.nodesSelected.count > 0 ? pair.heightBucket1.nodesSelected : pair.heightBucket1.nodesUnselected
+                    let arr2 = pair.heightBucket2.nodesSelected.count > 0 ? pair.heightBucket2.nodesSelected : pair.heightBucket2.nodesUnselected
+                    for node1 in arr1 {
+                        if !node1.tempUsed {
+                            for node2 in arr2 {
+                                if !node2.tempUsed {
+                                    if capOffNotSame(node1: node1, node2: node2) {
+                                        bestMatchWith2 = twoSumBucket.height
+                                        bestNode1With2 = node1
+                                        bestNode2With2 = node2
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        guard let bestNode1With2 = bestNode1With2 else {
+            print("final choice, 1, h1: \(bestMatchWith1)")
+            capOffComplete(strip: strip, node1: bestNode1With1)
+            return
+        }
+        
+        guard let bestNode2With2 = bestNode2With2 else {
+            print("final choice, 1, h1: \(bestMatchWith1)")
+            capOffComplete(strip: strip, node1: bestNode1With1)
+            return
+        }
+        
+        var bestMatchWith3 = 0
+        var bestNode1With3: ImageCollectionNode?
+        var bestNode2With3: ImageCollectionNode?
+        var bestNode3With3: ImageCollectionNode?
+        
+        for threeSumBucket in capoffThreeSumBucketList {
+            if threeSumBucket.height <= target, threeSumBucket.height > bestMatchWith3 {
+                for pair in threeSumBucket.pairs {
+                    let bucket1 = pair.heightBucket
+                    for pair in pair.twoSumBucket.pairs {
+                        let bucket2 = pair.heightBucket1
+                        let bucket3 = pair.heightBucket2
+                        let arr1 = bucket1.nodesSelected.count > 0 ? bucket1.nodesSelected : bucket1.nodesUnselected
+                        let arr2 = bucket2.nodesSelected.count > 0 ? bucket2.nodesSelected : bucket2.nodesUnselected
+                        let arr3 = bucket3.nodesSelected.count > 0 ? bucket3.nodesSelected : bucket3.nodesUnselected
+                        
+                        for node1 in arr1 {
+                            if !node1.tempUsed {
+                                for node2 in arr2 {
+                                    if !node2.tempUsed {
+                                        for node3 in arr3 {
+                                            if !node3.tempUsed {
+                                                if capOffNotSame(node1: node1, node2: node2, node3: node3) {
+                                                    bestMatchWith3 = threeSumBucket.height
+                                                    bestNode1With3 = node1
+                                                    bestNode2With3 = node2
+                                                    bestNode3With3 = node3
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        guard let bestNode1With3 = bestNode1With3 else {
+            if bestMatchWith2 >= bestMatchWith1 {
+                print("final choice, 2, h1: \(bestMatchWith1), h2: \(bestMatchWith2)")
+                capOffComplete(strip: strip, node1: bestNode1With2, node2: bestNode2With2)
+            } else {
+                print("final choice, 1, h1: \(bestMatchWith1), h2: \(bestMatchWith2)")
+                capOffComplete(strip: strip, node1: bestNode1With1)
+            }
+            return
+        }
+        guard let bestNode2With3 = bestNode2With3 else {
+            if bestMatchWith2 >= bestMatchWith1 {
+                print("final choice, 2, h1: \(bestMatchWith1), h2: \(bestMatchWith2)")
+                capOffComplete(strip: strip, node1: bestNode1With2, node2: bestNode2With2)
+            } else {
+                print("final choice, 1, h1: \(bestMatchWith1), h2: \(bestMatchWith2)")
+                capOffComplete(strip: strip, node1: bestNode1With1)
+            }
+            return
+        }
+        guard let bestNode3With3 = bestNode3With3 else {
+            if bestMatchWith2 >= bestMatchWith1 {
+                print("final choice, 2, h1: \(bestMatchWith1), h2: \(bestMatchWith2)")
+                capOffComplete(strip: strip, node1: bestNode1With2, node2: bestNode2With2)
+            } else {
+                print("final choice, 1, h1: \(bestMatchWith1), h2: \(bestMatchWith2)")
+                capOffComplete(strip: strip, node1: bestNode1With1)
+            }
+            return
+        }
+        
+        if bestMatchWith3 >= bestMatchWith2 {
+            if bestMatchWith3 >= bestMatchWith1 {
+                print("final choice, 3, h1: \(bestMatchWith1), h2: \(bestMatchWith2), h3: \(bestMatchWith3)")
+                capOffComplete(strip: strip, node1: bestNode1With3, node2: bestNode2With3, node3: bestNode3With3)
+            } else {
+                print("final choice, 1, h1: \(bestMatchWith1), h2: \(bestMatchWith2), h3: \(bestMatchWith3)")
+                capOffComplete(strip: strip, node1: bestNode1With1)
+            }
+            
+        } else {
+            if bestMatchWith2 >= bestMatchWith1 {
+                print("final choice, 2, h1: \(bestMatchWith1), h2: \(bestMatchWith2), h3: \(bestMatchWith3)")
+                capOffComplete(strip: strip, node1: bestNode1With2, node2: bestNode2With2)
+            } else {
+                print("final choice, 1, h1: \(bestMatchWith1), h2: \(bestMatchWith2), h3: \(bestMatchWith3)")
+                capOffComplete(strip: strip, node1: bestNode1With1)
+            }
+        }
     }
 }

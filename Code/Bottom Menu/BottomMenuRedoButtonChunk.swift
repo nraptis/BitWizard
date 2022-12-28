@@ -31,7 +31,6 @@ struct BottomMenuRedoButtonChunk: View {
                             .frame(width: height - (paddingLeft + paddingRight), height: height - (paddingTop + paddingBottom))
                             .background(RoundedRectangle(cornerRadius: 12.0).fill().foregroundColor(Color("charcoal")))
                         } else {
-                            
                             ZStack {
                                 
                             }
@@ -40,7 +39,6 @@ struct BottomMenuRedoButtonChunk: View {
                         }
                     }
                     .disabled(!enabled)
-                    
                     
                     ZStack {
                         if enabled {
@@ -53,7 +51,6 @@ struct BottomMenuRedoButtonChunk: View {
                                 Image(systemName: "arrow.right")
                                     .font(.system(size: 34))
                                     .foregroundColor(.white)
-                                
                             }
                         } else {
                             if ApplicationController.isIpad() {
@@ -76,6 +73,7 @@ struct BottomMenuRedoButtonChunk: View {
                      }
                      .frame(width: height - (paddingLeft + paddingRight), height: height - (paddingTop + paddingBottom))
                      .background(RoundedRectangle(cornerRadius: 12.0).stroke(style: StrokeStyle(lineWidth: 2)).foregroundColor(Color("limestone")))
+                     .allowsHitTesting(false)
                     
                 }
                 .frame(width: height - (paddingLeft + paddingRight), height: height - (paddingTop + paddingBottom))

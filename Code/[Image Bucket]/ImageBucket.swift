@@ -87,15 +87,7 @@ class ImageBucket {
         randomBucket.shuffle()
         //print("begin fresh pull: maximumGridCount:\(maximumGridCount) puw: \(previouslyUsedWords) pui: \(previouslyUsedIdeas)")
         
-        for node in recentlySelectedBag {
-            selectedBag.insert(node)
-        }
-        for node in recentlyDeselectedBag {
-            selectedBag.remove(node)
-        }
-        
-        recentlySelectedBag.removeAll(keepingCapacity: true)
-        recentlyDeselectedBag.removeAll(keepingCapacity: true)
+        mergeRecentlySelectedAndDeselected()
         
         for node in selectedBag {
             ignoreBag.remove(node: node)
@@ -153,7 +145,6 @@ class ImageBucket {
             }
         }
         
-        
         for node in ignoreBag.bag {
             switch node.type {
             case .idea:
@@ -206,8 +197,8 @@ class ImageBucket {
         for node in _selectedIdeas { ideas.append(node) }
         for node in _pulledIdeas { ideas.append(node) }
         
-        print("words count: \(words.count), sel: \(_selectedWords.count), pul: \(_pulledWords.count)")
-        print("ideas count: \(ideas.count), sel: \(_selectedIdeas.count), pul: \(_pulledIdeas.count)")
+        //print("words count: \(words.count), sel: \(_selectedWords.count), pul: \(_pulledWords.count)")
+        //print("ideas count: \(ideas.count), sel: \(_selectedIdeas.count), pul: \(_pulledIdeas.count)")
         
         for node in words {
             evictBag.add(node: node)
@@ -216,10 +207,6 @@ class ImageBucket {
         for node in ideas {
             evictBag.add(node: node)
         }
-        
-        
-        //printArray(name: "words", arr: words)
-        //printArray(name: "ideas", arr: ideas)
     }
     
     private func printArray(name: String, arr: [ImageCollectionNode]) {
@@ -247,6 +234,31 @@ class ImageBucket {
         return dummyNodeWord
     }
     
+    func mergeRecentlySelectedAndDeselected() {
+        for node in recentlySelectedBag {
+            selectedBag.insert(node)
+        }
+        for node in recentlyDeselectedBag {
+            selectedBag.remove(node)
+        }
+        recentlySelectedBag.removeAll(keepingCapacity: true)
+        recentlyDeselectedBag.removeAll(keepingCapacity: true)
+    }
+    
+    func forceSelected(node: ImageCollectionNode) {
+        recentlyDeselectedBag.remove(node)
+        if !selectedBag.contains(node) {
+            recentlySelectedBag.insert(node)
+        }
+    }
+    
+    func forceDeselected(node: ImageCollectionNode) {
+        recentlySelectedBag.remove(node)
+        if selectedBag.contains(node) {
+            recentlyDeselectedBag.insert(node)
+        }
+    }
+    
     func toggleSelected(node: ImageCollectionNode) {
         if selectedBag.contains(node) {
             if recentlySelectedBag.contains(node) {
@@ -270,18 +282,6 @@ class ImageBucket {
                 recentlySelectedBag.insert(node)
             }
         }
-        
-        /*
-        if selectedBag.contains(node) {
-            selectedBag.remove(node)
-            recentlySelectedBag.remove(node)
-        } else if recentlySelectedBag.contains(node) {
-            selectedBag.remove(node)
-            recentlySelectedBag.remove(node)
-        } else {
-            recentlySelectedBag.insert(node)
-        }
-        */
     }
     
     func isSelected(node: ImageCollectionNode) -> Bool {
@@ -295,20 +295,6 @@ class ImageBucket {
         if selectedBag.contains(node) { return true }
         return false
     }
-    
-    //selectedBag
-    
-    // Dequeue one "idea" => [IMG]
-    // Dequeue one "word" => [IMG]
-    
-    // Dequeue batch "idea" (gridWidth, gridHeight) => [IMG] (4 times expected layout's number of images)
-    // Dequeue batch "word" (gridWidth, gridHeight) => [IMG] (4 times expected layout's number of images)
-    
-    // Mark list as "was used" ([IMG])
-    // Mark list as "was not used" ([IMG])
-    
-    
-    // Pre-fetch bucket "idea" (These were
     
     func nodeFrom(fileName: String) -> ImageCollectionNode {
         if let node = collectionWords.dict[fileName] {

@@ -18,13 +18,15 @@ class GridLayout: ConceptLayout {
         print("GridLayout.deinit()")
     }
     
-    func build(gridWidth: Int) -> ConceptLayoutBuildResponse {
+    func build(gridWidth: Int, showHideMode: ShowHideMode) -> ConceptLayoutBuildResponse {
         
         let result = ConceptLayoutBuildResponse()
-        beginFreshBuild()
+        beginFreshBuild(showHideMode: showHideMode)
         let frame = CGRect(x: 0, y: 0, width: layoutWidth, height: layoutHeight)
-        placeStripsIn(rect: frame, gridWidth: gridWidth)
-        addConceptsToEachStrip()
+        placeStripsIn(rect: frame,
+                      gridWidth: gridWidth,
+                      alignment: .center)
+        addConceptsToEachStrip(showHideMode: showHideMode)
         for concept in concepts {
             result.add(node: concept.node)
         }

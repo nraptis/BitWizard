@@ -105,7 +105,4 @@ class ApplicationController {
             return toolbarHeight + toolbarMiddleSeparatorHeight + toolbarHeight + toolbarEdgeSeparatorHeight
         }
     }
-    
-    //landscape: Bool
-    
 }
