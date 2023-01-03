@@ -19,7 +19,7 @@ struct BottomMenuFlipButtonChunk: View {
         HStack(spacing: 0) {
             ZStack {
                 Button {
-                    
+                    mainContainerViewModel.flipVIntent()
                 } label: {
                     ZStack {
                         

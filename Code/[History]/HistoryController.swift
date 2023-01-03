@@ -9,7 +9,7 @@ import Foundation
 
 class HistoryController {
     
-    static let maxHistoryCount = 10
+    static let maxHistoryCount = 256
     
     var historyStack = [HistoryState]()
     var historyIndex: Int = 0
@@ -46,7 +46,6 @@ class HistoryController {
     
     func canUndo() -> Bool {
         if historyStack.count > 0 {
-            
             if lastActionWasAdd {
                 if historyIndex > 1 {
                     return true

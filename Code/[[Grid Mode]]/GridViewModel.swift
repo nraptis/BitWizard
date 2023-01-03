@@ -15,7 +15,7 @@ class GridViewModel: ObservableObject {
     }
     
     deinit {
-        print("GridViewModel.destroy()")
+        
     }
     
     var usedWords = [ImageCollectionNode]()

@@ -71,9 +71,16 @@ class ApplicationController {
     }()
     
     func handleMemoryWarning() {
-        print("App::handleMemoryWarning()")
         mainContainerViewModel.handleMemoryWarning()
     }
+    
+    lazy var plusImage: UIImage = {
+        let symbolConfig = UIImage.SymbolConfiguration(pointSize: 512, weight: .bold, scale: .large)
+        if let result = UIImage(systemName: "plus", withConfiguration: symbolConfig) {
+            return result.withRenderingMode(.alwaysTemplate)
+        }
+        return UIImage()
+    }()
     
     //ToolMenuConfiguration
     static func toolMenuConfiguration(landscape: Bool) -> ToolMenuConfiguration {

@@ -11,11 +11,10 @@ class GridLayout: ConceptLayout {
     
     required init(imageBucket: ImageBucket) {
         super.init(imageBucket: imageBucket)
-        print("GridLayout.init()")
     }
     
     deinit {
-        print("GridLayout.deinit()")
+        
     }
     
     func build(gridWidth: Int, showHideMode: ShowHideMode) -> ConceptLayoutBuildResponse {
@@ -26,7 +25,7 @@ class GridLayout: ConceptLayout {
         placeStripsIn(rect: frame,
                       gridWidth: gridWidth,
                       alignment: .center)
-        addConceptsToEachStrip(showHideMode: showHideMode)
+        addConceptsToEachStrip()
         for concept in concepts {
             result.add(node: concept.node)
         }

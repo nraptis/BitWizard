@@ -9,16 +9,24 @@ import Foundation
 
 class MainContainerViewModel: ObservableObject {
     
-    @Published var appMode: AppMode = .grid
+    @Published var appMode: AppMode = .pairings
     @Published var showHideMode: ShowHideMode = .showAll
     
-    static let maximumGridCountWords = 24
-    static let maximumGridCountIdeas = 12
+    static let maximumGridCountWords = 200
+    static let maximumGridCountIdeas = 140
     
     private(set) var gridWidth = 3
+    private(set) var gridWidthPairings = 1
+    
+    private(set) var flippedV: Bool = false
+    
     
     private var minGridWidth = 1
     private var maxGridWidth = ApplicationController.isIpad() ? 7 : 5
+    
+    private var minGridWidthPairings = 1
+    private var maxGridWidthPairings = ApplicationController.isIpad() ? 3 : 2
+    
     
     private let cache = ImageCache()
     
@@ -54,7 +62,7 @@ class MainContainerViewModel: ObservableObject {
         case .centralIdea:
             centralConceptViewModelSpawn()
         case .pairings:
-            break
+            pairingsViewModelSpawn()
         }
         self.collectionWords.wake()
         self.collectionIdeas.wake()
@@ -198,9 +206,9 @@ class MainContainerViewModel: ObservableObject {
         case .pairings:
             if let pairingsViewModel = pairingsViewModel {
                 if pairingsViewModel.layout.layoutWidth > pairingsViewModel.layout.layoutHeight {
-                    pairingsViewModel.build(gridWidth: gridWidth + 2, showHideMode: showHideMode)
+                    pairingsViewModel.build(gridWidth: gridWidthPairings + 1, showHideMode: showHideMode)
                 } else {
-                    pairingsViewModel.build(gridWidth: gridWidth, showHideMode: showHideMode)
+                    pairingsViewModel.build(gridWidth: gridWidthPairings, showHideMode: showHideMode)
                 }
             }
         }
@@ -295,14 +303,17 @@ class MainContainerViewModel: ObservableObject {
         switch appMode {
             
         case .grid:
+            imageBucket.mergeRecentlySelectedAndDeselected()
             gridViewModelSpawn()
             centralConceptViewModelDispose()
             pairingsViewModelDispose()
         case .centralIdea:
+            imageBucket.mergeRecentlySelectedAndDeselected()
             gridViewModelDispose()
             centralConceptViewModelSpawn()
             pairingsViewModelDispose()
         case .pairings:
+            imageBucket.mergeRecentlySelectedAndDeselected()
             gridViewModelDispose()
             centralConceptViewModelDispose()
             pairingsViewModelSpawn()
@@ -411,40 +422,71 @@ class MainContainerViewModel: ObservableObject {
     }
     
     func isLeftGridSizeStepperEnabled() -> Bool {
-        gridWidth > minGridWidth
+        switch appMode {
+        case .pairings:
+            return (gridWidthPairings > minGridWidthPairings)
+        default:
+            return (gridWidth > minGridWidth)
+        }
     }
     
     func isRightGridSizeStepperEnabled() -> Bool {
-        gridWidth < maxGridWidth
+        switch appMode {
+        case .pairings:
+            return (gridWidthPairings < maxGridWidthPairings)
+        default:
+            return (gridWidth < maxGridWidth)
+        }
     }
     
     func clickLeftGridSizeStepper() {
-        if gridWidth > minGridWidth {
-            
-            if _firstShuffle {
-                _firstShuffle = false
+        
+        switch appMode {
+        case .pairings:
+            if gridWidthPairings > minGridWidthPairings {
+                if _firstShuffle {
+                    _firstShuffle = false
+                    saveHistoryState()
+                }
+                gridWidthPairings -= 1
+                build()
                 saveHistoryState()
             }
-            
-            gridWidth -= 1
-            build()
-            
-            saveHistoryState()
+        default:
+            if gridWidth > minGridWidth {
+                if _firstShuffle {
+                    _firstShuffle = false
+                    saveHistoryState()
+                }
+                gridWidth -= 1
+                build()
+                saveHistoryState()
+            }
         }
     }
     
     func clickRightGridSizeStepper() {
-        if gridWidth < maxGridWidth {
-            
-            if _firstShuffle {
-                _firstShuffle = false
+        switch appMode {
+        case .pairings:
+            if gridWidthPairings < maxGridWidthPairings {
+                if _firstShuffle {
+                    _firstShuffle = false
+                    saveHistoryState()
+                }
+                gridWidthPairings += 1
+                build()
                 saveHistoryState()
             }
-            
-            gridWidth += 1
-            build()
-            
-            saveHistoryState()
+        default:
+            if gridWidth < maxGridWidth {
+                if _firstShuffle {
+                    _firstShuffle = false
+                    saveHistoryState()
+                }
+                gridWidth += 1
+                build()
+                saveHistoryState()
+            }
         }
     }
     
@@ -483,14 +525,9 @@ class MainContainerViewModel: ObservableObject {
     }
     
     func isDeselectAllEnabled() -> Bool {
-        let nodes = getAllVisibleImageCollectionNodes()
-        var result = false
-        for node in nodes {
-            if imageBucket.isSelected(node: node) {
-                result = true
-            }
-        }
-        return result
+        if imageBucket.selectedBag.count > 0 { return true }
+        if imageBucket.recentlySelectedBag.count > 0 { return true }
+        return false
     }
     
     func selectAllIntent() {
@@ -536,6 +573,11 @@ class MainContainerViewModel: ObservableObject {
         DispatchQueue.main.async { self.objectWillChange.send() }
     }
     
+    func flipVIntent() {
+        flippedV = !flippedV
+        DispatchQueue.main.async { self.objectWillChange.send() }
+    }
+    
     func isUndoEnabled() -> Bool {
         return historyController.canUndo()
     }
@@ -565,6 +607,7 @@ class MainContainerViewModel: ObservableObject {
         }
         
         gridWidth = state.gridWidth
+        gridWidthPairings = state.gridWidthPairings
         
         if let gridState = state.gridState, let gridViewModel = gridViewModel {
             gridViewModel.loadFrom(state: gridState)
@@ -591,7 +634,6 @@ class MainContainerViewModel: ObservableObject {
         var pairingsState: PairingsState?
         
         switch appMode {
-            
         case .grid:
             gridState = gridViewModel?.saveToState()
         case .centralIdea:
@@ -604,6 +646,7 @@ class MainContainerViewModel: ObservableObject {
                                         appMode: appMode,
                                         showHideMode: showHideMode,
                                         gridWidth: gridWidth,
+                                        gridWidthPairings: gridWidthPairings,
                                         gridState: gridState,
                                         centralConceptState: centralConceptState,
                                         pairingsState: pairingsState)

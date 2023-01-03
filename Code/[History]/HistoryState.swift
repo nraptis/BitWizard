@@ -12,6 +12,7 @@ class HistoryState {
     let appMode: AppMode
     let showHideMode: ShowHideMode
     let gridWidth: Int
+    let gridWidthPairings: Int
     let gridState: GridState?
     let centralConceptState: CentralConceptState?
     let pairingsState: PairingsState?
@@ -21,6 +22,7 @@ class HistoryState {
          appMode: AppMode,
          showHideMode: ShowHideMode,
          gridWidth: Int,
+         gridWidthPairings: Int,
          gridState: GridState?,
          centralConceptState: CentralConceptState?,
          pairingsState: PairingsState?) {
@@ -28,6 +30,7 @@ class HistoryState {
         self.appMode = appMode
         self.showHideMode = showHideMode
         self.gridWidth = gridWidth
+        self.gridWidthPairings = gridWidthPairings
         self.gridState = gridState
         self.centralConceptState = centralConceptState
         self.pairingsState = pairingsState

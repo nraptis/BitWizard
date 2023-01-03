@@ -15,8 +15,10 @@ class PairingsViewModel: ObservableObject {
     }
     
     deinit {
-        print("PairingsViewModel.destroy()")
+        
     }
+    
+    
     
     var usedWords = [ImageCollectionNode]()
     var usedIdeas = [ImageCollectionNode]()

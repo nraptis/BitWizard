@@ -15,7 +15,7 @@ class CentralConceptViewModel: ObservableObject {
     }
     
     deinit {
-        print("CentralConceptViewModel.destroy()")
+        
     }
     
     var usedWords = [ImageCollectionNode]()

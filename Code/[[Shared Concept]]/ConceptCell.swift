@@ -67,9 +67,12 @@ struct ConceptCell: View {
             }
         }
         .frame(width: width, height: height)
+        
         .offset(x: x, y: y)
         .animation(nil, value: false)
     }
+    
+    //func scale
 }
 
 struct ConceptCell_Previews: PreviewProvider {

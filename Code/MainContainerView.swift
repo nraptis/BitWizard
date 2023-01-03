@@ -17,6 +17,7 @@ struct MainContainerView: View {
                 makeView(geometry: containerGeometry)
             }
         }
+        .scaleEffect(CGSize(width: mainContainerViewModel.flippedV ? -1.0 : 1.0, height: mainContainerViewModel.flippedV ? -1.0 : 1.0))
     }
     
     func makeView(geometry: GeometryProxy) -> some View {
@@ -55,13 +56,14 @@ struct MainContainerView: View {
                     }
                 }
             }
-            .frame(width: geometry.size.width, height: mainContentHeight)
-            .background(Color.black)
+            .frame(width: geometry.size.width - 2, height: mainContentHeight - 2)
+            
             
             BottomMenuView(mainContainerViewModel: mainContainerViewModel,
                            width: geometry.size.width,
                            configuration: toolMenuConfiguration)
         }
+        
     }
     
     func gridView(gridViewModel: GridViewModel,
@@ -113,12 +115,12 @@ struct MainContainerView: View {
         if geometry.size.width > geometry.size.height {
             pairingsViewModel.register(layoutWidth: geometry.size.width,
                                        layoutHeight: mainContentHeight,
-                                       gridWidth: mainContainerViewModel.gridWidth + 2,
+                                       gridWidth: mainContainerViewModel.gridWidthPairings + 1,
                                        showHideMode: showHideMode)
         } else {
             pairingsViewModel.register(layoutWidth: geometry.size.width,
                                        layoutHeight: mainContentHeight,
-                                       gridWidth: mainContainerViewModel.gridWidth,
+                                       gridWidth: mainContainerViewModel.gridWidthPairings,
                                        showHideMode: showHideMode)
         }
         return PairingsView(pairingsViewModel: pairingsViewModel,

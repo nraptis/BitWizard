@@ -19,6 +19,9 @@ struct BitWizardApp: App {
                 .onAppear {
                     appDelegate.realizeApp(app)
                 }
+                
+                .background(Color.black)
+                .preferredColorScheme(.dark)
         }
     }
 }

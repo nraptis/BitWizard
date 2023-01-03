@@ -9,8 +9,7 @@ import Foundation
 
 class ImageBucketEvictBag {
     
-    //TODO: maxAge
-    static let maxAge = 4
+    static let maxAge = 5
     
     let imageBucket: ImageBucket
     let collectionWords: ImageCollectionWords

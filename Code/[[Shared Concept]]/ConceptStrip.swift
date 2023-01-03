@@ -108,11 +108,18 @@ class ConceptStrip {
             totalHeight += concept.height
         }
         
-        for _ in 0..<3 where totalHeight < height {
+        for _ in 0..<4 where totalHeight < height {
             for concept in concepts where totalHeight < height {
                 concept.height += 1.0
                 totalHeight += 1.0
             }
+        }
+        
+        var conceptsShuffled = [ConceptModel]()
+        conceptsShuffled.append(contentsOf: concepts)
+        for index in 0..<conceptsShuffled.count {
+            let rand = bucket.nextInt(conceptsShuffled.count)
+            conceptsShuffled.swapAt(index, rand)
         }
         
         let _x: CGFloat = x
@@ -127,7 +134,7 @@ class ConceptStrip {
             break
         }
         
-        for concept in concepts {
+        for concept in conceptsShuffled {
             concept.x = _x
             concept.y = _y
             _y += concept.height

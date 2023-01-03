@@ -11,11 +11,10 @@ class CentralConceptLayout: ConceptLayout {
     
     required init(imageBucket: ImageBucket) {
         super.init(imageBucket: imageBucket)
-        print("CentralConceptLayout.init()")
     }
     
     deinit {
-        print("CentralConceptLayout.deinit()")
+        
     }
     
     func build(gridWidth: Int, showHideMode: ShowHideMode) -> ConceptLayoutBuildResponse {
@@ -25,7 +24,7 @@ class CentralConceptLayout: ConceptLayout {
         beginFreshBuild(showHideMode: showHideMode)
         
         let centerBox = addCenterPiece(gridWidth: gridWidth)
-        let centerBoxPadding = ApplicationController.isIpad() ? 8.0 : 5.0
+        let centerBoxPadding = ApplicationController.isIpad() ? 5.0 : 3.0
         let centerBoxExpanded = CGRect(x: centerBox.minX - centerBoxPadding,
                                        y: centerBox.minY - centerBoxPadding,
                                        width: centerBox.width + centerBoxPadding + centerBoxPadding,
@@ -83,7 +82,7 @@ class CentralConceptLayout: ConceptLayout {
                           alignment: .center)
         }
         
-        addConceptsToEachStrip(showHideMode: showHideMode)
+        addConceptsToEachStrip()
         
         for concept in concepts {
             result.add(node: concept.node)
@@ -110,9 +109,9 @@ class CentralConceptLayout: ConceptLayout {
         
         var sizeH = findLargestAppropriateColumnWidthFor(gridWidth: gridWidth)
         if ApplicationController.isIpad() {
-            sizeH += 10
-        } else {
             sizeH += 6
+        } else {
+            sizeH += 4
         }
         
         var sizeV = sizeH

@@ -17,7 +17,8 @@ struct PairingsView: View {
             PairingsViewContent(pairingsViewModel: pairingsViewModel,
                                 mainContainerViewModel: mainContainerViewModel,
                                 concepts: pairingsViewModel.layout.concepts,
-                                rects: pairingsViewModel.layout.rects)
+                                rects: pairingsViewModel.layout.rects,
+                                pluses: pairingsViewModel.layout.pluses)
         }
         .frame(width: width, height: height)
         .background(Color.black)
