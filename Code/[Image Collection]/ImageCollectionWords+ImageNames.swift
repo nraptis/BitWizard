@@ -9,6 +9,7 @@ import Foundation
 
 extension ImageCollectionWords {
     
+    
     static func imageNames() -> [String] {
         let text = """
         absent_minded.png
@@ -213,8 +214,7 @@ extension ImageCollectionWords {
         """
         return textToLines(imageListText: text)
     }
-    
-    
+     
     /*
     static func imageNames() -> [String] {
         let text = """
@@ -1700,7 +1700,6 @@ extension ImageCollectionWords {
         easter_eggs.png
         easter.png
         easy_bake.png
-        eat_muffs.png
         eat_too_fast.png
         eating.png
         echo.png
@@ -2011,7 +2010,6 @@ extension ImageCollectionWords {
         food_too_hot.png
         food.png
         foot_ball.png
-        foot_gold.png
         foot_note.png
         foot_print.png
         foot.png
@@ -4115,7 +4113,6 @@ extension ImageCollectionWords {
         salvage.png
         same_school.png
         same_shit.png
-        same_wich.png
         samurai.png
         sand_box.png
         sand_castle.png
@@ -4164,7 +4161,6 @@ extension ImageCollectionWords {
         scorpion.png
         scott_land.png
         scout.png
-        scrabbled_eggs.png
         scrape_off.png
         scrapes.png
         scratch_sniff.png

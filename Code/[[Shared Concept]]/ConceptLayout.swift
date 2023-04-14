@@ -440,7 +440,7 @@ class ConceptLayout {
         print("layout (\(name)) u-i: \(unselectedIdeas)")
     }
     
-    func beginFreshBuild(showHideMode: ShowHideMode) {
+    func beginFreshBuild() {
         
         randomBucket.set(randomBucket: randomBucketStored)
         
@@ -454,9 +454,7 @@ class ConceptLayout {
             node.tempUsed = false
             
             if imageBucket.isSelectedNotRecently(node: node) {
-                if showHideMode == .showAll {
-                    _selectedWords.append(node)
-                }
+                _selectedWords.append(node)
             } else {
                 _unselectedWords.append(node)
             }
@@ -473,9 +471,7 @@ class ConceptLayout {
         for node in imageBucket.ideas {
             node.tempUsed = false
             if imageBucket.isSelectedNotRecently(node: node) {
-                if showHideMode == .showAll {
-                    _selectedIdeas.append(node)
-                }
+                _selectedIdeas.append(node)
             } else {
                 _unselectedIdeas.append(node)
             }

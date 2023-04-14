@@ -19,8 +19,8 @@ class ConceptStrip {
     // Can only try to add when < Lo,
     // But if goes > Hi, cannot add
     // This will guarantee some wiggle room
-    static let capCutoffHeightFactorMin = 1.0
-    static let capCutoffHeightFactorMax = 1.0
+    static let capCutoffHeightFactorMin = 0.0
+    static let capCutoffHeightFactorMax = 0.65
     
     let x: CGFloat
     let y: CGFloat

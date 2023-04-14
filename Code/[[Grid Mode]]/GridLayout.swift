@@ -17,10 +17,10 @@ class GridLayout: ConceptLayout {
         
     }
     
-    func build(gridWidth: Int, showHideMode: ShowHideMode) -> ConceptLayoutBuildResponse {
+    func build(gridWidth: Int) -> ConceptLayoutBuildResponse {
         
         let result = ConceptLayoutBuildResponse()
-        beginFreshBuild(showHideMode: showHideMode)
+        beginFreshBuild()
         let frame = CGRect(x: 0, y: 0, width: layoutWidth, height: layoutHeight)
         placeStripsIn(rect: frame,
                       gridWidth: gridWidth,

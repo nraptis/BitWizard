@@ -15,21 +15,24 @@ struct TopMenuViewTwoLine: View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
                 
+                /*
                 TopMenuOptionsButtonChunk(mainContainerViewModel: mainContainerViewModel,
                                           width: topLeftHalfWidth(),
                                           height: ApplicationController.toolbarHeight)
+                */
+                TopMenuUndoButtonChunk(mainContainerViewModel: mainContainerViewModel, width: ApplicationController.toolbarHeight, height: ApplicationController.toolbarHeight, enabled: mainContainerViewModel.isUndoEnabled())
                 
-                TopMenuModeSegmentChunk(mainContainerViewModel: mainContainerViewModel,
-                                        width: topCenterWidth(),
-                                        height: ApplicationController.toolbarHeight)
+                TopMenuRedoButtonChunk(mainContainerViewModel: mainContainerViewModel, width: ApplicationController.toolbarHeight, height: ApplicationController.toolbarHeight, enabled: mainContainerViewModel.isRedoEnabled())
                 
-                TopMenuShowButtonChunk(mainContainerViewModel: mainContainerViewModel,
-                                       width: topRightHalfWidth(),
-                                       height: ApplicationController.toolbarHeight,
-                                       align: 1,
-                                       enabled: mainContainerViewModel.isSelectAllEnabled())
+                TopMenuShuffleChunk(mainContainerViewModel: mainContainerViewModel,
+                                    width: topCenterWidth(),
+                                    height: ApplicationController.toolbarHeight)
                 
-                
+                Spacer()
+                    .frame(width: ApplicationController.toolbarHeight)
+                TopMenuFlipButtonChunk(mainContainerViewModel: mainContainerViewModel,
+                                       width: ApplicationController.toolbarHeight,
+                                       height: ApplicationController.toolbarHeight)
             }
             .frame(width: width, height: ApplicationController.toolbarHeight)
             .background(LinearGradient(colors: [Color("toolbar_dark_1"), Color("toolbar_dark_2")], startPoint: UnitPoint(x: 0.5, y: 0.0), endPoint: UnitPoint(x: 0.5, y: 1.0)))
@@ -41,16 +44,36 @@ struct TopMenuViewTwoLine: View {
             .background(Color.black)
             
             HStack(spacing: 0) {
-                VStack {
-                    
-                }
-                .frame(width: topLeftHalfWidth(), height: ApplicationController.toolbarHeight)
+                
+                TopMenuGridSizeStepperChunk(mainContainerViewModel: mainContainerViewModel,
+                                            width: ApplicationController.toolbarHeight + ApplicationController.toolbarHeight,
+                                            height: ApplicationController.toolbarHeight)
+                
+                Spacer()
+                
+                TopMenuShowButtonChunk(mainContainerViewModel: mainContainerViewModel,
+                                       width: ApplicationController.toolbarHeight,
+                                       height: ApplicationController.toolbarHeight,
+                                       align: 1,
+                                       enabled: mainContainerViewModel.isSelectAllEnabled())
+                
+                TopMenuHideButtonChunk(mainContainerViewModel: mainContainerViewModel,
+                                       width: ApplicationController.toolbarHeight,
+                                       height: ApplicationController.toolbarHeight,
+                                       align: 1,
+                                       enabled: mainContainerViewModel.isDeselectAllEnabled())
+                
+                /*
                 TopMenuShowHideSegmentChunkCenterAligned(mainContainerViewModel: mainContainerViewModel, width: topCenterWidth(), height: ApplicationController.toolbarHeight)
+                */
+                
+                /*
                 TopMenuHideButtonChunk(mainContainerViewModel: mainContainerViewModel,
                                        width: topRightHalfWidth(),
                                        height: ApplicationController.toolbarHeight,
                                        align: 1,
                                        enabled: mainContainerViewModel.isDeselectAllEnabled())
+                */
                 
             }
             .frame(width: width, height: ApplicationController.toolbarHeight)
@@ -67,20 +90,19 @@ struct TopMenuViewTwoLine: View {
     }
     
     func topLeftHalfWidth() -> CGFloat {
-        return CGFloat(Int((width - topCenterWidth()) * 0.5 + 0.5))
+        return ApplicationController.toolbarHeight + ApplicationController.toolbarHeight
     }
     
     func topCenterWidth() -> CGFloat {
-        var result = round(width * 0.6)
-        
-        if result > 210.0 {
-            result = 210.0
+        var result = width - topLeftHalfWidth() - topRightHalfWidth()
+        if result > 220.0 {
+            result = 220.0
         }
         return result
     }
     
     func topRightHalfWidth() -> CGFloat {
-        return CGFloat(Int(width - (topCenterWidth() + topLeftHalfWidth())))
+        return ApplicationController.toolbarHeight + ApplicationController.toolbarHeight
     }
 }
 

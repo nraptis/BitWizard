@@ -7,31 +7,19 @@
 
 import UIKit
 
-enum AppMode {
-    case grid
-    case centralIdea
-    case pairings
-}
-
-enum ShowHideMode {
-    case showAll
-    case hideSelectedUponShuffle
-    case hideSelectedUponSelect
-}
-
 class ApplicationController {
     
     static let averageWidthWords: CGFloat = 800.0
-    static let averageHeightWords: CGFloat = 325.0
-    static let averageRatioWords: CGFloat = 2.45
+    static let averageHeightWords: CGFloat = 385.0
+    static let averageRatioWords: CGFloat = 2.0
     
-    static let averageWidthIdeas: CGFloat = 785.0
-    static let averageHeightIdeas: CGFloat = 630.0
+    static let averageWidthIdeas: CGFloat = 790.0
+    static let averageHeightIdeas: CGFloat = 638.0
     static let averageRatioIdeas: CGFloat = 1.25
     
-    static let averageWidth: CGFloat = 790.0
-    static let averageHeight: CGFloat = 480.0
-    static let averageRatio: CGFloat = 1.65
+    static let averageWidth: CGFloat = 795.0
+    static let averageHeight: CGFloat = 412.0
+    static let averageRatio: CGFloat = 1.94
     
     
     static func preview() -> ApplicationController {
@@ -51,7 +39,7 @@ class ApplicationController {
     }
     
     static var toolbarHeight: CGFloat {
-        isIpad() ? 76 : 54
+        isIpad() ? 76 : 50
     }
     
     static var toolbarMiddleSeparatorHeight: CGFloat {

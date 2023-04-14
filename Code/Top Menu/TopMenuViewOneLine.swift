@@ -15,29 +15,48 @@ struct TopMenuViewOneLine: View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
                 HStack(spacing: 0) {
-                    TopMenuOptionsButtonChunk(mainContainerViewModel: mainContainerViewModel,
-                                              width: ApplicationController.toolbarHeight,
-                                              height: ApplicationController.toolbarHeight)
+                    TopMenuUndoButtonChunk(mainContainerViewModel: mainContainerViewModel, width: ApplicationController.toolbarHeight, height: ApplicationController.toolbarHeight, enabled: mainContainerViewModel.isUndoEnabled())
+                    
+                    TopMenuRedoButtonChunk(mainContainerViewModel: mainContainerViewModel, width: ApplicationController.toolbarHeight, height: ApplicationController.toolbarHeight, enabled: mainContainerViewModel.isRedoEnabled())
                     
                     HStack(spacing: 0) {
+                        Spacer()
+                        TopMenuGridSizeStepperChunk(mainContainerViewModel: mainContainerViewModel,
+                                                    width: ApplicationController.toolbarHeight + ApplicationController.toolbarHeight,
+                                                    height: ApplicationController.toolbarHeight)
+                        Spacer()
+                    }
+                }
+                .frame(height: ApplicationController.toolbarHeight)
+                
+                TopMenuShuffleChunk(mainContainerViewModel: mainContainerViewModel,
+                                    width: centerWidth(),
+                                    height: ApplicationController.toolbarHeight)
+                
+                HStack(spacing: 0) {
+                    HStack(spacing: 0) {
+                        Spacer()
                         TopMenuShowButtonChunk(mainContainerViewModel: mainContainerViewModel,
                                                width: ApplicationController.toolbarHeight,
                                                height: ApplicationController.toolbarHeight,
-                                               align: 0,
+                                               align: 1,
                                                enabled: mainContainerViewModel.isSelectAllEnabled())
+                        
                         TopMenuHideButtonChunk(mainContainerViewModel: mainContainerViewModel,
                                                width: ApplicationController.toolbarHeight,
                                                height: ApplicationController.toolbarHeight,
-                                               align: 0,
+                                               align: 1,
                                                enabled: mainContainerViewModel.isDeselectAllEnabled())
+                        Spacer()
                     }
-                    .frame(width: leftHalfWidth() - ApplicationController.toolbarHeight, height: ApplicationController.toolbarHeight)
+                    
+                    Spacer()
+                        .frame(width: ApplicationController.toolbarHeight)
+                    TopMenuFlipButtonChunk(mainContainerViewModel: mainContainerViewModel,
+                                           width: ApplicationController.toolbarHeight,
+                                           height: ApplicationController.toolbarHeight)
                 }
-                .frame(width: leftHalfWidth(), height: ApplicationController.toolbarHeight)
-                
-                TopMenuModeSegmentChunk(mainContainerViewModel: mainContainerViewModel, width: centerWidth(), height: ApplicationController.toolbarHeight)
-                
-                TopMenuShowHideSegmentChunkRightAligned(mainContainerViewModel: mainContainerViewModel, width: rightHalfWidth(), height: ApplicationController.toolbarHeight)
+                .frame(height: ApplicationController.toolbarHeight)
             }
             .frame(width: width, height: ApplicationController.toolbarHeight)
             .background(LinearGradient(colors: [Color("toolbar_dark_1"), Color("toolbar_dark_2")], startPoint: UnitPoint(x: 0.5, y: 0.0), endPoint: UnitPoint(x: 0.5, y: 1.0)))
@@ -46,17 +65,19 @@ struct TopMenuViewOneLine: View {
             }
             .frame(width: width, height: ApplicationController.toolbarEdgeSeparatorHeight)
             .background(Color.white)
-            
         }
         .frame(width: width)
     }
     
     func leftHalfWidth() -> CGFloat {
-        return CGFloat(Int((width - centerWidth()) * 0.5 + 0.5))
+        return ApplicationController.toolbarHeight +
+        ApplicationController.toolbarHeight +
+        ApplicationController.toolbarHeight +
+        ApplicationController.toolbarHeight
     }
     
     func centerWidth() -> CGFloat {
-        var result = round(width * 0.4)
+        var result = width - leftHalfWidth() - rightHalfWidth()
         if result > 220.0 {
             result = 220.0
         }
@@ -64,9 +85,11 @@ struct TopMenuViewOneLine: View {
     }
     
     func rightHalfWidth() -> CGFloat {
-        return CGFloat(Int(width - (centerWidth() + leftHalfWidth())))
+        return ApplicationController.toolbarHeight +
+        ApplicationController.toolbarHeight +
+        ApplicationController.toolbarHeight +
+        ApplicationController.toolbarHeight
     }
-    
 }
 
 struct TopMenuViewOneLine_Previews: PreviewProvider {
